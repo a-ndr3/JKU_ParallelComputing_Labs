@@ -1,23 +1,25 @@
 #include "gauss_methods.cpp"
 #include "benchmarking.h"
 
+#include <cstdint>
+
 using namespace GaussMethods;
 
 namespace ParallelGaussBasic
 {
 	class ParallelGauss : public Gauss
 	{
-		void divideRow(myMatrix& A, long row, long divisor) override
+		void divideRow(myMatrix& A, int64_t row, int64_t divisor) override
 		{
-			for (long i = 0; i < A.getColumns(); i++)
+			for (int64_t i = 0; i < A.getColumns(); i++)
 			{
 				A.set(row, i, mDiv(A.get(row, i), divisor)); //modular division of each el by divisor
 			}
 		}
 
-		void subtractRow(myMatrix& A, long targetRow, long sourceRow, long multiplier) override
+		void subtractRow(myMatrix& A, int64_t targetRow, int64_t sourceRow, int64_t multiplier) override
 		{
-			for (long i = 0; i < A.getColumns(); i++)
+			for (int64_t i = 0; i < A.getColumns(); i++)
 			{
 				A.set(targetRow, i, mSub(A.get(targetRow, i), mMul(multiplier, A.get(sourceRow, i)))); // substr from target string str multipied 
 			}
@@ -25,7 +27,7 @@ namespace ParallelGaussBasic
 
 		void diagonalize(myMatrix& A, myMatrix& I) override
 		{
-			long n = A.getRows();
+			int64_t n = A.getRows();
 
 			if (globals::threadMode == globals::ThreadMode::LOCAL)
 			{
@@ -36,10 +38,10 @@ namespace ParallelGaussBasic
 				omp_set_num_threads(omp_get_max_threads());
 			}
 
-			for (long i = 0; i < n; i++)
+			for (int64_t i = 0; i < n; i++)
 			{
-				long pivot = A.get(i, i); // diagonal element
-				long inv_pivot = mInv(pivot); // get modular inverse of pivot
+				int64_t pivot = A.get(i, i); // diagonal element
+				int64_t inv_pivot = mInv(pivot); // get modular inverse of pivot
 
 				if (inv_pivot == -1) //check if not regular based on mInv return value cuz modular inverse of 0 is 'null'
 				{
@@ -51,9 +53,9 @@ namespace ParallelGaussBasic
 				divideRow(I, i, pivot); // divide following row of identity matrix by pivot el
 
 				#pragma omp parallel for schedule(dynamic)
-				for (long j = i + 1; j < n; j++)
+				for (int64_t j = i + 1; j < n; j++)
 				{
-					long multiplier = A.get(j, i);
+					int64_t multiplier = A.get(j, i);
 
 					subtractRow(A, j, i, multiplier);
 					subtractRow(I, j, i, multiplier);
@@ -69,7 +71,7 @@ namespace ParallelGaussBasic
 		{
 			myBenchmarks bench;
 
-			long n = A.getRows();
+			int64_t n = A.getRows();
 
 			myMatrix I(n);
 

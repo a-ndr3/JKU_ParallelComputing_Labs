@@ -4,9 +4,9 @@
 #include "PC_assignment1.h"
 #include "globals.h"
 #include "matrix.h"
-#include "gauss_methods.cpp"
+//#include "gauss_methods.cpp"
 #include "parallel_gauss_methods_basic.cpp"
-#include "parallel_gauss_methods_advanced.cpp"
+//#include "parallel_gauss_methods_advanced.cpp"
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -144,16 +144,16 @@ int main(int argc, char* args[])
 	//debug
 	GaussMethods::Gauss gauss;
 	ParallelGaussBasic::ParallelGauss parallelGaussBasic;
-	ParallelGaussAdvanced::ParallelGaussAdvanced parallelGaussAdvanced;
+	//ParallelGaussAdvanced::ParallelGaussAdvanced parallelGaussAdvanced;
 
 	//myBenchmarks bench;
-	//myMatrix A(4); //test data
-	//A.fill_matrix(15); //test data
-	//A.print();
+	myMatrix A(5); //test data
+	A.fill_matrix(15); //test data
+	A.print();
 
-	myMatrix A(50);
+	//myMatrix A(50);
 
-	A.fill_matrix(15);
+	//A.fill_matrix(15);
 
 	//myMatrix A(1200);  // solo ~ 62 sec parallbasic with 4 ~ 12sec				
 	//A.fill_matrix(15);
@@ -163,8 +163,12 @@ int main(int argc, char* args[])
 
 	//bench.startTimer();
 
-	myMatrix result = parallelGaussBasic.Solve(A);
-	
+	myMatrix result = gauss.Solve(A);
+	result.print();
+	A.fill_matrix(15);
+	A.print();
+
+	bool x = gauss.checkIfInversionIsCorrect(A, result);
 	//myMatrix result = gauss.Solve(A);
 	//myMatrix result = parallelGaussAdvanced.Solve(A);	
 

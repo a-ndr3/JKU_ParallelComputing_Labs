@@ -1,5 +1,6 @@
 #ifndef globals_h
 #define globals_h
+#include <cstdint>
 
 namespace globals 
 {
@@ -16,8 +17,8 @@ namespace globals
 		ADVANCED = 2
 	};
 
-	extern long primeNumber;
-	extern long threadsAmount;
+	extern int64_t primeNumber;
+	extern int threadsAmount;
 	extern int seed;
 	extern int matrixSize;
 	extern ThreadMode threadMode;

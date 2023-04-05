@@ -2,11 +2,11 @@
 
 namespace globals
 {
-	extern long primeNumber{ 645432 }; //982451653 //primeNumber = 11 for demo
+	extern int64_t primeNumber{ 109 }; //982451653 //primeNumber = 11 for demo
 
-	extern long threadsAmount{ 2 };
+	extern int threadsAmount{ 2 };
 
-	extern int seed{ 14 };
+	extern int64_t seed{ 14 };
 
 	extern int matrixSize{ 4 };
 

@@ -5,33 +5,33 @@
 #include <random>
 #include "matrix.h"
 
-long** matrix;
-long rows;
-long columns;
+int64_t** matrix;
+int64_t rows;
+int64_t columns;
 
-myMatrix::myMatrix(long _rows, long _columns)
+myMatrix::myMatrix(int64_t _rows, int64_t _columns)
 {
 	rows = _rows;
 	columns = _columns;
-	matrix = new long* [rows];
-	for (long i = 0; i < rows; i++)
+	matrix = new int64_t* [rows];
+	for (int64_t i = 0; i < rows; i++)
 	{
-		matrix[i] = new long[columns];
+		matrix[i] = new int64_t[columns];
 	}
 }
-myMatrix::myMatrix(long _rows_and_columns)
+myMatrix::myMatrix(int64_t _rows_and_columns)
 {
 	rows = _rows_and_columns;
 	columns = _rows_and_columns;
-	matrix = new long* [rows];
-	for (long i = 0; i < rows; i++)
+	matrix = new int64_t* [rows];
+	for (int64_t i = 0; i < rows; i++)
 	{
-		matrix[i] = new long[columns];
+		matrix[i] = new int64_t[columns];
 	}
 }
 myMatrix::~myMatrix()
 {
-	for (long i = 0; i < rows; i++)
+	for (int64_t i = 0; i < rows; i++)
 	{
 		delete[] matrix[i];
 	}
@@ -44,30 +44,30 @@ void myMatrix::fill_matrix(int _seed)
 
 	std::default_random_engine el(_seed);
 
-	std::uniform_int_distribution<long> distribution(LONG_MIN, LONG_MAX);
+	std::uniform_int_distribution<int64_t> distribution(LONG_MIN, LONG_MAX);
 
-	for (long i = 0; i < rows; i++)
+	for (int64_t i = 0; i < rows; i++)
 	{
-		for (long j = 0; j < columns; j++)
+		for (int64_t j = 0; j < columns; j++)
 		{
 			matrix[i][j] = abs(distribution(el) % globals::primeNumber);
 		}
 	}
 }
 
-long myMatrix::get(long i, long j)
+int64_t myMatrix::get(int64_t i, int64_t j)
 {
 	return matrix[i][j];
 }
-void myMatrix::set(long i, long j, long value)
+void myMatrix::set(int64_t i, int64_t j, int64_t value)
 {
 	matrix[i][j] = value;
 }
-long myMatrix::getRows()
+int64_t myMatrix::getRows()
 {
 	return rows;
 }
-long myMatrix::getColumns()
+int64_t myMatrix::getColumns()
 {
 	return columns;
 }
@@ -85,10 +85,10 @@ void myMatrix::print()
 
 void myMatrix::make_it_identityMatrix()
 {
-	for (long i = 0; i < rows; i++)
+	for (int64_t i = 0; i < rows; i++)
 	{
-		matrix[i] = new long[rows];
-		memset(matrix[i], 0, rows * sizeof(long)); // initialize identity matrix to all zeros
+		matrix[i] = new int64_t[rows];
+		memset(matrix[i], 0, rows * sizeof(int64_t)); // initialize identity matrix to all zeros
 		matrix[i][i] = 1;
 	}
 }

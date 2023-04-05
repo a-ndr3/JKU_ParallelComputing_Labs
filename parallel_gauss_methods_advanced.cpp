@@ -1,5 +1,6 @@
 #include "gauss_methods.cpp"
 #include "benchmarking.h"
+#include <cstdint>
 
 using namespace GaussMethods;
 
@@ -7,19 +8,17 @@ namespace ParallelGaussAdvanced
 {
 	class ParallelGaussAdvanced : public Gauss
 	{
-		bool useThreads = false;
-
-		void divideRow(myMatrix& A, long row, long divisor) override
+		void divideRow(myMatrix& A, int64_t row, int64_t divisor) override
 		{
-			for (long i = 0; i < A.getColumns(); i++)
+			for (int64_t i = 0; i < A.getColumns(); i++)
 			{
 				A.set(row, i, mDiv(A.get(row, i), divisor)); //modular division of each el by divisor
 			}
 		}
 
-		void subtractRow(myMatrix& A, long targetRow, long sourceRow, long multiplier) override
+		void subtractRow(myMatrix& A, int64_t targetRow, int64_t sourceRow, int64_t multiplier) override
 		{
-			for (long i = 0; i < A.getColumns(); i++)
+			for (int64_t i = 0; i < A.getColumns(); i++)
 			{
 				A.set(targetRow, i, mSub(A.get(targetRow, i), mMul(multiplier, A.get(sourceRow, i)))); // substr from target string str multipied 
 			}
@@ -38,7 +37,7 @@ namespace ParallelGaussAdvanced
 		{
 			myBenchmarks bench;
 
-			long n = A.getRows();
+			int64_t n = A.getRows();
 
 			myMatrix I(n);
 
