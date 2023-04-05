@@ -10,7 +10,7 @@
 class myMatrix
 {
 private:
-    int64_t* matrix;
+    int64_t matrix[][];
     int64_t rows;
     int64_t columns;
 
@@ -32,18 +32,21 @@ myMatrix::myMatrix(int64_t _rows, int64_t _columns)
 {
     rows = _rows;
     columns = _columns;
-    matrix = new int64_t[rows * columns];
+    matrix = new int64_t[rows][columns];
 }
 
 myMatrix::myMatrix(int64_t _rows_and_columns)
 {
-    rows = _rows_and_columns;
-    columns = _rows_and_columns;
-    matrix = new int64_t[rows * columns];
+    rows = columns = _rows_and_columns;
+    matrix = new int64_t[rows][rows];
 }
 
 myMatrix::~myMatrix()
 {
+    for (auto i = 0; i < rows; i++)
+    {
+        delete matrix[i];
+	}
     delete[] matrix;
 }
 
@@ -56,19 +59,19 @@ void myMatrix::fill_matrix(int _seed)
     {
         for (int64_t j = 0; j < columns; j++)
         {
-            matrix[i * columns + j] = abs(distribution(el) % globals::primeNumber);
+            matrix[i][j] = abs(distribution(el) % globals::primeNumber);
         }
     }
 }
 
 int64_t myMatrix::get(int64_t i, int64_t j)
 {
-    return matrix[i * columns + j];
+    return matrix[i][j];
 }
 
 void myMatrix::set(int64_t i, int64_t j, int64_t value)
 {
-    matrix[i * columns + j] = value;
+    matrix[i][j] = value;
 }
 
 int64_t myMatrix::getRows()
@@ -87,7 +90,7 @@ void myMatrix::print()
     {
         for (int j = 0; j < columns; j++)
         {
-            std::cout << matrix[i * columns + j] << " ";
+            std::cout << matrix[i][j] << " ";
         }
         std::cout << std::endl;
     }
@@ -99,7 +102,7 @@ void myMatrix::make_it_identityMatrix()
     {
         for (int64_t j = 0; j < columns; j++)
         {
-            matrix[i * columns + j] = (i == j) ? 1 : 0;
+            matrix[i][j] = (i == j) ? 1 : 0;
         }
     }
 }

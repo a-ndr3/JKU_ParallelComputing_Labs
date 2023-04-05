@@ -4,9 +4,9 @@
 #include "PC_assignment1.h"
 #include "globals.h"
 #include "matrix.h"
-//#include "gauss_methods.cpp"
-#include "parallel_gauss_methods_basic.cpp"
-//#include "parallel_gauss_methods_advanced.cpp"
+#include "gauss_methods.cpp"
+#include "parallel_gauss_methods_basic.h"
+#include "parallel_gauss_methods_advanced.h"
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -142,9 +142,9 @@ int main(int argc, char* args[])
 	*/
 
 	//debug
-	GaussMethods::Gauss gauss;
-	ParallelGaussBasic::ParallelGauss parallelGaussBasic;
-	//ParallelGaussAdvanced::ParallelGaussAdvanced parallelGaussAdvanced;
+	Gauss gauss;
+	ParallelGauss parallelGaussBasic;
+	ParallelGaussAdvanced parallelGaussAdvanced;
 
 	//myBenchmarks bench;
 	myMatrix A(5); //test data

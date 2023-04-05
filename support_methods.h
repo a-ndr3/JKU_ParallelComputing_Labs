@@ -1,3 +1,6 @@
+#ifndef support_methods_h
+#define support_methods_h
+
 #include "globals.h"
 #include <math.h>
 #include <cstdint>
@@ -22,5 +25,4 @@ static int64_t mSub(int64_t a, int64_t b) { return (a + globals::primeNumber - b
 static int64_t mMul(int64_t a, int64_t b) { return (a * b) % globals::primeNumber; }
 static int64_t mDiv(int64_t a, int64_t b) { return mMul(a, mInv(b)); }
 
-
-
+#endif // !support_methods_h
