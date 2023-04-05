@@ -3,9 +3,9 @@
 
 namespace globals 
 {
-	extern const long primeNumber;
-	extern const long threadsAmount;
-	extern const int seed;
+	extern long primeNumber;
+	extern long threadsAmount;
+	extern int seed;
 }
 
 #endif

@@ -2,9 +2,9 @@
 
 namespace globals
 {
-	extern const long primeNumber{ 11 }; //982451653
+	extern long primeNumber{ 645432 }; //982451653 //primeNumber = 11 for demo
 
-	extern const long threadsAmount{ 1 };
+	extern long threadsAmount{ 2 };
 
-	extern const int seed{ 14 };
+	extern int seed{ 14 };
 }
