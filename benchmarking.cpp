@@ -1,39 +1,34 @@
 #include <omp.h>
+#include "benchmarking.h"
 
-namespace Benchmarking 
+double start;
+double end;
+double elapsed;
+
+myBenchmarks::myBenchmarks()
 {
-	class myBenchmarks
-	{
-		double start;
-		double end;
-		double elapsed;
-
-	public:
-		myBenchmarks()
-		{
-			start = 0.0000000000000;
-			end = 0.0000000000000;
-			elapsed = 0.0000000000000;
-		}
-		~myBenchmarks()
-		{
-
-		}
-
-		void startTimer()
-		{
-			start = omp_get_wtime();
-		}
-
-		void stopTimer()
-		{
-			end = omp_get_wtime();
-		}
-
-		double getElapsedTime()
-		{
-			elapsed = end - start;
-			return elapsed;
-		}
-	};
+	start = 0.0000000000000;
+	end = 0.0000000000000;
+	elapsed = 0.0000000000000;
 }
+myBenchmarks::~myBenchmarks()
+{
+
+}
+
+void myBenchmarks::startTimer()
+{
+	start = omp_get_wtime();
+}
+
+void myBenchmarks::stopTimer()
+{
+	end = omp_get_wtime();
+}
+
+double myBenchmarks::getElapsedTime()
+{
+	elapsed = end - start;
+	return elapsed;
+}
+

@@ -1,5 +1,5 @@
 #include "gauss_methods.cpp"
-#include "benchmarking.cpp"
+#include "benchmarking.h"
 
 using namespace GaussMethods;
 
@@ -7,8 +7,6 @@ namespace ParallelGaussBasic
 {
 	class ParallelGauss : public Gauss
 	{
-		bool useThreads = false;
-
 		void divideRow(myMatrix& A, long row, long divisor) override
 		{
 			for (long i = 0; i < A.getColumns(); i++)
@@ -28,12 +26,12 @@ namespace ParallelGaussBasic
 		void diagonalize(myMatrix& A, myMatrix& I) override
 		{
 			long n = A.getRows();
-			
-			if (useThreads)
+
+			if (globals::threadMode == globals::ThreadMode::LOCAL)
 			{
 				omp_set_num_threads(globals::threadsAmount);
 			}
-			else 
+			else
 			{
 				omp_set_num_threads(omp_get_max_threads());
 			}
@@ -65,10 +63,27 @@ namespace ParallelGaussBasic
 
 	public:
 		ParallelGauss() : Gauss() {}
-		ParallelGauss(bool useThreadsGlobal) : Gauss()
-		{
-			useThreads = useThreadsGlobal;
-		}
 		~ParallelGauss() {}
+
+		myMatrix Solve(myMatrix& A) override
+		{
+			myBenchmarks bench;
+
+			long n = A.getRows();
+
+			myMatrix I(n);
+
+			I.make_it_identityMatrix();
+
+			Logger::log("Parallel Basic Gauss method started");
+
+			bench.startTimer();
+			diagonalize(A, I);
+			bench.stopTimer();
+
+			Logger::logFull("Finished with elapsed time: ", bench.getElapsedTime());
+
+			return I;
+		}
 	};
 }

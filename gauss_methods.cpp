@@ -3,6 +3,8 @@
 #include "globals.h"
 #include "matrix.h"
 #include <iostream>
+#include "benchmarking.h"
+#include "logger.cpp"
 
 namespace GaussMethods
 {
@@ -105,13 +107,21 @@ namespace GaussMethods
 
 		virtual myMatrix Solve(myMatrix& A)
 		{
+			myBenchmarks bench;
+
 			long n = A.getRows();
 
 			myMatrix I(n);
 
 			I.make_it_identityMatrix();
+			
+			Logger::log("Gauss method started");
 
+			bench.startTimer();
 			diagonalize(A, I);
+			bench.stopTimer();
+
+			Logger::logFull("Finished with elapsed time: ", bench.getElapsedTime());
 
 			return I;
 		}
