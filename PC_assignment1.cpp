@@ -4,6 +4,7 @@
 #include "PC_assignment1.h"
 #include "globals.h"
 #include "matrix.h"
+//#include "matrix_solid.h"
 #include "gauss_methods.cpp"
 #include "parallel_gauss_methods_basic.h"
 #include "parallel_gauss_methods_advanced.h"
@@ -79,100 +80,67 @@ int main(int argc, char* args[])
 		Logger::log(str);
 	}
 
-	/*
-	const int N = 100;
-	std::vector<int> data(N);
+	myMatrix A(globals::matrixSize);
+	myMatrix* result;
 
-	//omp_set_num_threads(4);
+	A.fill_matrix(globals::seed);
 
-	#pragma omp parallel for schedule(dynamic)
-		for (int i = 0; i < N; ++i) {
-
-		data[i] = i * i;
-
-		std::cout << "Thread " << omp_get_thread_num() << " processed element " << i << std::endl;
-		}
-	*/
-
-	/*
-	// myMatrix* A = new myMatrix(5, 5); heap alloc
-
-	// myMatrix B(5, 5); stack alloc
-
-	//myMatrix ** C = new myMatrix*[5];
-	//C[0] = new myMatrix(5, 5);
-
-	//A->fill_matrix();
-	//B.fill_matrix();
-
-
-	//A->print();
-	//B.print();
-	*/
+	Gauss gauss;
+	ParallelGauss parallelGaussBasic;
+	ParallelGaussAdvanced parallelGaussAdvanced;
 
 	//ZUSIE switch
-	/* 
-	#pragma region Switch_for_ZUSIE
-		switch (globals::algorithm)
-		{
-			myMatrix* result;
+#pragma region Switch_for_ZUSIE
 
-			myMatrix A(globals::matrixSize);
+	switch (globals::algorithm)
+	{
+	case globals::Algorithm::SEQ:
+		result = new myMatrix(gauss.Solve(A));
+		//result->print();
+		break;
+	case globals::Algorithm::BASIC:
+		result = new myMatrix(parallelGaussBasic.Solve(A));
+		break;
+	case globals::Algorithm::ADVANCED:
+		result = new myMatrix(parallelGaussAdvanced.Solve(A));
+		break;
+	default:
+		std::cout << "Invalid algorithm" << std::endl;
+		return -1;
+		break;
+	}
+#pragma endregion
 
-			A.fill_matrix(globals::seed);
-
-		case globals::Algorithm::SEQ:
-			GaussMethods::Gauss gauss;
-			result = &gauss.Solve(A);
-			break;
-		case globals::Algorithm::BASIC:
-			ParallelGaussBasic::ParallelGauss parallelGaussBasic;
-			result = &parallelGaussBasic.Solve(A);
-			break;
-		case globals::Algorithm::ADVANCED:
-			ParallelGaussAdvanced::ParallelGaussAdvanced parallelGaussAdvanced;
-			result = &parallelGaussAdvanced.Solve(A);
-			break;
-		default:
-			std::cout << "Invalid algorithm" << std::endl;
-			return -1;
-			break;
-		}
-	#pragma endregion
-	*/
-
+	/*
 	//debug
 	Gauss gauss;
 	ParallelGauss parallelGaussBasic;
 	ParallelGaussAdvanced parallelGaussAdvanced;
 
-	//myBenchmarks bench;
+	myBenchmarks bench;
 	myMatrix A(5); //test data
-	A.fill_matrix(15); //test data
+
+	A.fill_matrix(205); //test data
 	A.print();
 
-	//myMatrix A(50);
-
-	//A.fill_matrix(15);
-
-	//myMatrix A(1200);  // solo ~ 62 sec parallbasic with 4 ~ 12sec				
+	//myMatrix A(1200);  // solo ~ 62 sec parallbasic with 4 ~ 12sec
 	//A.fill_matrix(15);
 
 	//myMatrix A(2000); //solo ~ 281 sec parallbasic with 4 ~ 56sec
 	//A.fill_matrix(15);
 
-	//bench.startTimer();
+	bench.startTimer();
 
-	myMatrix result = gauss.Solve(A);
+	myMatrix result = parallelGaussAdvanced.Solve(A);
 	result.print();
-	A.fill_matrix(15);
-	A.print();
+	//A.fill_matrix(205);
+	//A.print();
 
-	bool x = gauss.checkIfInversionIsCorrect(A, result);
+	//bool x = gauss.checkIfInversionIsCorrect(A, result);
 	//myMatrix result = gauss.Solve(A);
-	//myMatrix result = parallelGaussAdvanced.Solve(A);	
+	//myMatrix result = parallelGaussAdvanced.Solve(A);
 
-	  //bench.stopTimer();
+	bench.stopTimer();
 
-	  //std::cout << "Time elapsed: " << std::fixed << std::setprecision(13) << bench.getElapsedTime() << std::endl;
+	std::cout << "Time elapsed: " << std::fixed << std::setprecision(13) << bench.getElapsedTime() << std::endl; */
 }

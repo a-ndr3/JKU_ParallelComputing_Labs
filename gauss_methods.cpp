@@ -106,7 +106,7 @@ public:
 
 	bool checkIfInversionIsCorrect(myMatrix& firstMatrix, myMatrix& matrixA)
 	{
-		auto tempMatr = multiply_matrices(firstMatrix, matrixA);
+		myMatrix tempMatr = multiply_matrices(firstMatrix, matrixA);
 
 		for (int i = 0; i < tempMatr.getRows(); i++)
 		{

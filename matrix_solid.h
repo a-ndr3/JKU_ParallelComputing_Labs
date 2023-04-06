@@ -1,19 +1,19 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef MATRIX_SOLID_H
+#define MATRIX_SOLID_H
 
 #include "globals.h"
 #include <cstdint>
 
-class myMatrix
+class matrix_Solid
 {
-	int64_t** matrix;
+	int64_t *matrix;
 	int64_t rows;
 	int64_t columns;
 
 public:
-	myMatrix(int64_t _rows, int64_t _columns);
-	myMatrix(int64_t _rows_and_columns);
-	~myMatrix();
+	matrix_Solid(int64_t _rows, int64_t _columns);
+	matrix_Solid(int64_t _rows_and_columns);
+	~matrix_Solid();
 
 	void fill_matrix(int _seed = globals::seed);
 
