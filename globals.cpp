@@ -4,9 +4,9 @@ namespace globals
 {
 	extern int64_t primeNumber{ 109 }; //109
 
-	extern int threadsAmount{ 1 };
+	extern int threadsAmount{ 3 };
 
-	extern int seed{ 205 };
+	extern int seed{ 109 }; //54
 
 	extern int matrixSize{ 4 };
 

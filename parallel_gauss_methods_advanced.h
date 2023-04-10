@@ -11,11 +11,12 @@ class ParallelGaussAdvanced : public Gauss
 
 	 void diagonalize(myMatrix& A, myMatrix& I) override;
 
+	 void subtractRowThreads(int64_t* row, int64_t* pivotRow, int64_t multiplier, int64_t columns);
 public:
 	ParallelGaussAdvanced() : Gauss() {};
 	~ParallelGaussAdvanced() {};
 
-	 myMatrix Solve(myMatrix& A) override;
+	 myMatrix Solve(myMatrix& A) override;	 
 };
 
 #endif

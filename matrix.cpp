@@ -9,6 +9,9 @@ int64_t** matrix;
 int64_t rows;
 int64_t columns;
 
+std::vector<Vec> vectors;
+
+
 myMatrix::myMatrix(int64_t _rows, int64_t _columns)
 {
 	rows = _rows;
@@ -44,13 +47,13 @@ void myMatrix::fill_matrix(int _seed)
 
 	std::default_random_engine el(_seed);
 
-	std::uniform_int_distribution<int64_t> distribution(LONG_MIN, LONG_MAX);
+	std::uniform_int_distribution<int64_t> distribution(0, INT32_MAX / 2);
 
 	for (int64_t i = 0; i < rows; i++)
 	{
 		for (int64_t j = 0; j < columns; j++)
 		{
-			matrix[i][j] = abs(distribution(el) % globals::primeNumber);
+			matrix[i][j] = distribution(el) % globals::primeNumber;
 		}
 	}
 }
@@ -63,6 +66,8 @@ void myMatrix::set(int64_t i, int64_t j, int64_t value)
 {
 	matrix[i][j] = value;
 }
+
+
 int64_t myMatrix::getRows()
 {
 	return rows;
@@ -83,6 +88,13 @@ void myMatrix::print()
 	}
 }
 
+void myMatrix::swapRows(int64_t row1, int64_t row2)
+{
+	int64_t* temp = matrix[row1];
+	matrix[row1] = matrix[row2];
+	matrix[row2] = temp;
+}
+
 void myMatrix::make_it_identityMatrix()
 {
 	for (int64_t i = 0; i < rows; i++)
@@ -91,4 +103,29 @@ void myMatrix::make_it_identityMatrix()
 		memset(matrix[i], 0, rows * sizeof(int64_t)); // initialize identity matrix to all zeros
 		matrix[i][i] = 1;
 	}
+}
+
+
+//Advanced planned?
+
+void myMatrix::splitMatrix(int64_t threadsAmount)
+{
+	for (int64_t i = 0; i < rows; ++i) 
+	{
+		Vec newRow;
+		newRow.threadNumber = i % threadsAmount;
+		newRow.startOfArrays.push_back(matrix[i]);
+		newRow.size = columns;
+		vectors.push_back(newRow);
+	}
+}
+
+std::vector<Vec> myMatrix::getVec() 
+{
+	return vectors;
+}
+
+int64_t myMatrix::getVecSize() 
+{
+	return vectors.size();
 }
