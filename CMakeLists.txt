@@ -13,7 +13,7 @@ project ("PC_assignment1")
 
 find_package(OpenMP)
 # Add source to this project's executable.
-add_executable (PC_assignment1 "PC_assignment1.cpp" "PC_assignment1.h" "support_methods.h"  "globals.h" "matrix.cpp" "globals.cpp" "benchmarking.cpp" "parallel_gauss_methods_basic.cpp" "matrix.h" "parallel_gauss_methods_advanced.cpp" "logger.cpp" "benchmarking.h"  "matrix_solid.h")
+add_executable (PC_assignment1 "PC_assignment1.cpp" "PC_assignment1.h" "support_methods.h"  "globals.h" "matrix.cpp" "globals.cpp" "benchmarking.cpp" "parallel_gauss_methods_basic.cpp" "matrix.h" "parallel_gauss_methods_advanced.cpp" "logger.cpp" "benchmarking.h"    )
 
 if(OpenMP_CXX_FOUND)
   target_link_libraries(${PROJECT_NAME}

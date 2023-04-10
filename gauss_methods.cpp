@@ -8,31 +8,10 @@
 #include <iostream>
 #include "benchmarking.h"
 #include "logger.cpp"
+#include <vector>
 
 class Gauss
-{
-	myMatrix multiply_matrices(myMatrix& A, myMatrix& B)
-	{
-		int64_t n = A.getRows();
-		int64_t m = B.getColumns();
-
-		myMatrix C(n, m);
-
-		for (int64_t i = 0; i < n; i++)
-		{
-			for (int64_t j = 0; j < m; j++)
-			{
-				int64_t sum = 0;
-				for (int64_t k = 0; k < n; k++)
-				{
-					sum += (A.get(i, k) * B.get(k, j));
-				}
-				C.set(i, j, sum);
-			}
-		}
-		return C;
-	}
-
+{	
 	virtual void divideRow(myMatrix& A, int64_t row, int64_t divisor)
 	{
 		for (int64_t i = 0; i < A.getColumns(); i++)
@@ -55,17 +34,22 @@ class Gauss
 
 		for (int64_t i = 0; i < n; i++)
 		{
-			int64_t pivot = A.get(i, i); // diagonal element
-			int64_t inv_pivot = mInv(pivot); // get modular inverse of pivot
-
-			//check if not regular
-			if (inv_pivot == -1)
-			{
-				std::cout << "Matrix is not regular." << std::endl;
-				return;
+			int64_t maxRowIndex = i;
+			for (int64_t k = i + 1; k < n; k++) {
+				if (A.get(k, i) > A.get(maxRowIndex, i)) {
+					maxRowIndex = k;
+				}
 			}
 
+			if (maxRowIndex != i) {
+				A.swapRows(i, maxRowIndex);
+				I.swapRows(i, maxRowIndex);
+			}
+
+			int64_t pivot = A.get(i, i); // diagonal element
+
 			divideRow(A, i, pivot); // divide pivot row by pivot el to get 1
+
 			divideRow(I, i, pivot); // divide following row of identity matrix by pivot el
 
 			for (int64_t j = 0; j < n; j++)
@@ -76,6 +60,7 @@ class Gauss
 
 					subtractRow(A, j, i, multiplier); //substract multiplied pivot row from current to make el below pivot = 0
 					subtractRow(I, j, i, multiplier); //substract multiplied pivot row from following in identity
+
 				}
 			}
 		}
@@ -93,7 +78,7 @@ public:
 
 		I.make_it_identityMatrix();
 
-		Logger::log("Gauss method started");
+		Logger::log("Gauss method started for Matrix = " + std::to_string(n));
 
 		bench.startTimer();
 		diagonalize(A, I);
@@ -104,23 +89,29 @@ public:
 		return I;
 	}
 
-	bool checkIfInversionIsCorrect(myMatrix& firstMatrix, myMatrix& matrixA)
-	{
-		myMatrix tempMatr = multiply_matrices(firstMatrix, matrixA);
+	bool checkIfInversionIsCorrect(myMatrix& matrix, myMatrix& inverseMatrix)
+	{	
+		typedef std::vector<std::vector<int64_t>> Matrix;
+		int64_t n = matrix.getRows();
+		
+		Matrix result(n, std::vector<int64_t>(n, 0));
 
-		for (int i = 0; i < tempMatr.getRows(); i++)
-		{
-			for (int j = 0; j < tempMatr.getColumns(); j++)
-			{
-				if (i != j)
-				{
-					if (abs(tempMatr.get(i, j) % globals::primeNumber) != 0)
-						return false;
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < n; ++j) {
+				for (int k = 0; k < n; ++k) {
+					int64_t product = static_cast<int64_t>(matrix.get(i,k)) * inverseMatrix.get(k,j);
+					result[i][j] = (result[i][j] + product) % globals::primeNumber;
 				}
-				else
-				{
-					if (abs(tempMatr.get(i, j) % globals::primeNumber) != 1)
-						return false;
+			}
+		}
+		
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < n; ++j) {
+				if (i == j && result[i][j] != 1) {
+					return false;
+				}
+				if (i != j && result[i][j] != 0) {
+					return false;
 				}
 			}
 		}

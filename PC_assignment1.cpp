@@ -4,7 +4,6 @@
 #include "PC_assignment1.h"
 #include "globals.h"
 #include "matrix.h"
-//#include "matrix_solid.h"
 #include "gauss_methods.cpp"
 #include "parallel_gauss_methods_basic.h"
 #include "parallel_gauss_methods_advanced.h"
@@ -80,15 +79,18 @@ int main(int argc, char* args[])
 		Logger::log(str);
 	}
 
-	myMatrix A(globals::matrixSize);
-	myMatrix* result;
+
+	/*myMatrix A(globals::matrixSize);
+	myMatrix* result; bool x = true;
 
 	A.fill_matrix(globals::seed);
+	A.print();
 
 	Gauss gauss;
 	ParallelGauss parallelGaussBasic;
-	ParallelGaussAdvanced parallelGaussAdvanced;
+	ParallelGaussAdvanced parallelGaussAdvanced;*/
 
+	/*
 	//ZUSIE switch
 #pragma region Switch_for_ZUSIE
 
@@ -96,13 +98,33 @@ int main(int argc, char* args[])
 	{
 	case globals::Algorithm::SEQ:
 		result = new myMatrix(gauss.Solve(A));
-		//result->print();
+
+		A.fill_matrix(globals::seed);
+		x = gauss.checkIfInversionIsCorrect(A, *result);
+		A.print();
+		std::cout << "__________" << std::endl;
+		result->print();
+
 		break;
 	case globals::Algorithm::BASIC:
 		result = new myMatrix(parallelGaussBasic.Solve(A));
+
+		A.fill_matrix(globals::seed);
+		x = gauss.checkIfInversionIsCorrect(A, *result);
+		A.print();
+		std::cout << "__________" << std::endl;
+		result->print();
+
 		break;
 	case globals::Algorithm::ADVANCED:
 		result = new myMatrix(parallelGaussAdvanced.Solve(A));
+
+		A.fill_matrix(globals::seed);
+		x = gauss.checkIfInversionIsCorrect(A, *result);
+		A.print();
+		std::cout << "__________" << std::endl;
+		result->print();
+
 		break;
 	default:
 		std::cout << "Invalid algorithm" << std::endl;
@@ -110,37 +132,29 @@ int main(int argc, char* args[])
 		break;
 	}
 #pragma endregion
+*/
+	
+	ParallelGaussAdvanced gauss;
+	for (int i = 3; i < 4; i++)
+	{
+		myMatrix A(i);
+		bool x = true;
 
-	/*
-	//debug
-	Gauss gauss;
-	ParallelGauss parallelGaussBasic;
-	ParallelGaussAdvanced parallelGaussAdvanced;
+		A.fill_matrix(globals::seed);
+		A.print();
+		myMatrix result = gauss.Solve(A);
 
-	myBenchmarks bench;
-	myMatrix A(5); //test data
+		//std::cout << "______________" << std::endl;
+		result.print();
 
-	A.fill_matrix(205); //test data
-	A.print();
+		A.fill_matrix(globals::seed);
+		x = gauss.checkIfInversionIsCorrect(A, result);
 
-	//myMatrix A(1200);  // solo ~ 62 sec parallbasic with 4 ~ 12sec
-	//A.fill_matrix(15);
-
-	//myMatrix A(2000); //solo ~ 281 sec parallbasic with 4 ~ 56sec
-	//A.fill_matrix(15);
-
-	bench.startTimer();
-
-	myMatrix result = parallelGaussAdvanced.Solve(A);
-	result.print();
-	//A.fill_matrix(205);
-	//A.print();
-
-	//bool x = gauss.checkIfInversionIsCorrect(A, result);
-	//myMatrix result = gauss.Solve(A);
-	//myMatrix result = parallelGaussAdvanced.Solve(A);
-
-	bench.stopTimer();
-
-	std::cout << "Time elapsed: " << std::fixed << std::setprecision(13) << bench.getElapsedTime() << std::endl; */
+		if (!x)
+		{
+			std::cout << "Error with i = " << i << std::endl;
+		}
+		
+	}
 }
+
