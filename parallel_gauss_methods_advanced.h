@@ -11,7 +11,7 @@ class ParallelGaussAdvanced : public Gauss
 
 	 void diagonalize(myMatrix& A, myMatrix& I) override;
 
-	 void subtractRowThreads(int64_t* row, int64_t* pivotRow, int64_t multiplier, int64_t columns);
+	 void subtractRowThreads(std::vector<std::vector<int64_t>>& A, int64_t targetRow, int64_t sourceRow, int64_t multiplier);
 public:
 	ParallelGaussAdvanced() : Gauss() {};
 	~ParallelGaussAdvanced() {};

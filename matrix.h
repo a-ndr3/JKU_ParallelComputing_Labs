@@ -6,24 +6,17 @@
 #include <omp.h>
 #include <vector>
 
-struct Vec{
-    std::vector<int64_t*> startOfArrays;
-    int64_t size;
-    int threadNumber;
-};
-
 class myMatrix
 {
     int64_t** matrix;
     int64_t rows;
     int64_t columns;
 
-    std::vector<Vec> vectors;
-
 public:
     myMatrix(int64_t _rows, int64_t _columns);
     myMatrix(int64_t _rows_and_columns);
     ~myMatrix();
+
 
     void fill_matrix(int _seed = globals::seed);
 
@@ -36,11 +29,14 @@ public:
 
     void make_it_identityMatrix();
 
+    int64_t* operator[](int64_t row) const {
+        return matrix[row];
+    }
 
-    //Advanced planned?
-    void splitMatrix(int64_t threadsAmount);
-    std::vector<Vec> getVec();
-    int64_t getVecSize();
+    int64_t** getMatrix();
+
+   std::vector<int64_t> getWholeRow(int rowN);
+
 };
 
 #endif

@@ -135,7 +135,7 @@ int main(int argc, char* args[])
 */
 	
 	ParallelGaussAdvanced gauss;
-	for (int i = 3; i < 4; i++)
+	for (int i = 3; i < 5; i++)
 	{
 		myMatrix A(i);
 		bool x = true;
@@ -144,7 +144,7 @@ int main(int argc, char* args[])
 		A.print();
 		myMatrix result = gauss.Solve(A);
 
-		//std::cout << "______________" << std::endl;
+		std::cout << "______________" << std::endl;
 		result.print();
 
 		A.fill_matrix(globals::seed);

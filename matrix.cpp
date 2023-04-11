@@ -9,9 +9,6 @@ int64_t** matrix;
 int64_t rows;
 int64_t columns;
 
-std::vector<Vec> vectors;
-
-
 myMatrix::myMatrix(int64_t _rows, int64_t _columns)
 {
 	rows = _rows;
@@ -47,7 +44,7 @@ void myMatrix::fill_matrix(int _seed)
 
 	std::default_random_engine el(_seed);
 
-	std::uniform_int_distribution<int64_t> distribution(0, INT32_MAX / 2);
+	std::uniform_int_distribution<int64_t> distribution(0, globals::primeNumber - 1); //INT32_MAX / 2   globals::primeNumber - 1
 
 	for (int64_t i = 0; i < rows; i++)
 	{
@@ -105,27 +102,16 @@ void myMatrix::make_it_identityMatrix()
 	}
 }
 
+int64_t** myMatrix::getMatrix() {
+	return matrix;
+}
 
-//Advanced planned?
-
-void myMatrix::splitMatrix(int64_t threadsAmount)
+std::vector<int64_t> myMatrix::getWholeRow(int rowN) 
 {
-	for (int64_t i = 0; i < rows; ++i) 
-	{
-		Vec newRow;
-		newRow.threadNumber = i % threadsAmount;
-		newRow.startOfArrays.push_back(matrix[i]);
-		newRow.size = columns;
-		vectors.push_back(newRow);
+	std::vector<int64_t> temp;
+
+	for (int j = 0; j < columns; ++j) {
+		temp.push_back(matrix[rowN][j]);
 	}
-}
-
-std::vector<Vec> myMatrix::getVec() 
-{
-	return vectors;
-}
-
-int64_t myMatrix::getVecSize() 
-{
-	return vectors.size();
+	return temp;
 }
