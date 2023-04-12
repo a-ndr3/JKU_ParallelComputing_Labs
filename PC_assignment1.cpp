@@ -135,7 +135,8 @@ int main(int argc, char* args[])
 */
 	
 	ParallelGaussAdvanced gauss;
-	for (int i = 10; i < 11; i++)
+	//ParallelGauss gauss;
+	for (int i = 4; i < 5; i++)
 	{
 		myMatrix A(i);
 		bool x = true;

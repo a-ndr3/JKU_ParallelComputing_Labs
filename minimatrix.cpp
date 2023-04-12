@@ -98,7 +98,7 @@ void minimatrix::swapRows(int64_t row1, int64_t row2)
 	swap(parsedMatrix[row1], parsedMatrix[row2]);
 }
 
-std::vector<int64_t> minimatrix::getRow(int64_t row) {
+std::vector<int64_t>& minimatrix::getRow(int64_t row) {
 
 	return parsedMatrix[row];
 }
