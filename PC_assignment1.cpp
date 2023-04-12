@@ -135,25 +135,25 @@ int main(int argc, char* args[])
 */
 	
 	ParallelGaussAdvanced gauss;
-	for (int i = 3; i < 5; i++)
+	for (int i = 10; i < 11; i++)
 	{
 		myMatrix A(i);
 		bool x = true;
 
 		A.fill_matrix(globals::seed);
-		A.print();
+		//A.print();
 		myMatrix result = gauss.Solve(A);
 
-		std::cout << "______________" << std::endl;
-		result.print();
+		//std::cout << "______________" << std::endl;
+		//result.print();
 
-		A.fill_matrix(globals::seed);
-		x = gauss.checkIfInversionIsCorrect(A, result);
+		//A.fill_matrix(globals::seed);
+		//x = gauss.checkIfInversionIsCorrect(A, result);
 
-		if (!x)
-		{
-			std::cout << "Error with i = " << i << std::endl;
-		}
+		//if (!x)
+		//{
+		//	std::cout << "Error with i = " << i << std::endl;
+		//}
 		
 	}
 }

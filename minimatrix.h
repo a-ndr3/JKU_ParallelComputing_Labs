@@ -2,6 +2,7 @@
 #define MINIMATRIX_H
 
 #include <vector>
+#include "matrix.h"
 
 using namespace std;
 
@@ -29,6 +30,33 @@ public:
     int getThreadForSpecificRow(int64_t rowNumber);
     int getNumOfThreadUsed();
 };
+
+
+class minimatrix 
+{
+private:
+    std::vector<std::vector<int64_t>> parsedMatrix;
+    int threads;
+
+public:
+    minimatrix(int threadAmount)
+    {
+        threads = threadAmount;
+    }
+    
+    void parse(myMatrix& matr, int threadId);
+    void update(myMatrix& matr, int threadId);
+    
+    std::vector<std::vector<int64_t>> getParsedMatrix() const {
+        return parsedMatrix;
+    }
+
+    void swapRows(int64_t row1, int64_t row2);
+    vector<int64_t> getRow(int64_t rowN);
+    void setRow(int64_t rowN, const vector<int64_t>& row);
+    int64_t get(int64_t rowN, int64_t colN);
+};
+
 
 #endif
 

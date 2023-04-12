@@ -1,4 +1,4 @@
-#include "parallel_gauss_methods_advanced.h"
+﻿#include "parallel_gauss_methods_advanced.h"
 #include "minimatrix.h"
 #include <cstdint>
 #include <omp.h>
@@ -12,11 +12,28 @@ void ParallelGaussAdvanced::divideRow(myMatrix& A, int64_t row, int64_t divisor)
 	}
 }
 
-void ParallelGaussAdvanced::subtractRowThreads(std::vector<std::vector<int64_t>>& A, int64_t targetRow, int64_t sourceRow, int64_t multiplier)
+void ParallelGaussAdvanced::divideRowThreads(minimatrix& A, int64_t row, int64_t divisor)
 {
-	for (int64_t i = 0; i < A[0].size(); i++)
+	auto rows = A.getParsedMatrix();
+	for (int64_t i = 0; i < rows.size(); i++)
 	{
-		A[targetRow][i] = mSub(A[targetRow][i], mMul(multiplier, A[sourceRow][i]));
+		for (int j = 0; j < rows[i].size(); j++)
+		{
+			rows[row][j] = mDiv(rows[row][j], divisor);
+		}
+	}
+}
+
+void ParallelGaussAdvanced::subtractRowThreads(minimatrix& A, int64_t targetRow, int64_t sourceRow, int64_t multiplier)
+{
+	auto rows = A.getParsedMatrix();
+	for (int64_t i = 0; i < rows.size(); i++)
+	{
+		for (int j = 0; j < rows[i].size(); j++)
+		{
+			rows[targetRow][j] = mSub(rows[targetRow][j], mMul(multiplier, rows[sourceRow][j]));
+		}
+
 	}
 }
 
@@ -28,104 +45,84 @@ void ParallelGaussAdvanced::subtractRow(myMatrix& A, int64_t targetRow, int64_t 
 	}
 }
 
-static bool findPivotRow(myMatrix& matrix, int i) {
-	if (matrix.get(i, i) != 0) {
-		return true;
-	}
-
-	for (int pivot_search_row = i + 1; pivot_search_row < matrix.getRows(); pivot_search_row++) {
-		if (matrix.get(pivot_search_row, i) != 0) {
-			matrix.swapRows(pivot_search_row, i);
-			return true;
-		}
-	}
-	return false;
-}
 
 void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 {
 	auto x = omp_get_max_threads();
-	//auto miniA = miniParser(A.getMatrix(), A.getRows(), A.getColumns(), x);
-	//auto miniI = miniParser(I.getMatrix(), A.getRows(), A.getColumns(), x);
-	//auto parsedA = miniA.getParsedMatrix();
-	//auto parsedI = miniParser(I.getMatrix(), I.getRows(), I.getColumns(), omp_get_max_threads()).getParsedMatrix();
+	auto arows = A.getRows();
+	vector<minimatrix> mini;
+	vector<minimatrix> miniI;
 
-	/*int i = 0;
-	for (const auto& row : parsedA)
+	for (int i = 0; i < x; i++)
 	{
-		for (const auto& col : row)
-		{
-			std::cout << col << " ";
-		}
-		std::cout << "thread: " << miniA.getThreadForSpecificRow(i) << std::endl;
-		i++;
-	}*/
+		auto mmatr = new minimatrix(x);
+		mmatr->parse(A, i);
+		mini.push_back(*mmatr); // не забыть что появляются пустые вектора когда тредов больше чем размер матрицы
+	}
 
-	int64_t n = A.getRows();
-	int64_t num_threads = omp_get_max_threads();
-
-	for (int64_t i = 0; i < n; i++)
+	for (int i = 0; i < x; i++)
 	{
-		int64_t maxRowIndex = i;
-		for (int64_t k = i + 1; k < n; k++) {
-			if (A.get(k, i) > A.get(maxRowIndex, i)) {
-				maxRowIndex = k;
-			}
-		}
+		auto mmatr = new minimatrix(x);
+		mmatr->parse(I, i);
+		miniI.push_back(*mmatr);
+	}
 
-		if (maxRowIndex != i) {
-			A.swapRows(i, maxRowIndex);
-			I.swapRows(i, maxRowIndex);
-		}
+	//#pragma omp parallel //for num_threads(x)
+	for (int i = 0; i < x; i++)
+	{
+		minimatrix& mini_A = mini[i];
+		minimatrix& mini_I = miniI[i];
 
-		int64_t pivot = A.get(i, i);
-
-		divideRow(A, i, pivot);
-		divideRow(I, i, pivot);
-
-		auto miniA = miniParser(A.getMatrix(), A.getRows(), A.getColumns(), x);
-		auto miniI = miniParser(I.getMatrix(), A.getRows(), A.getColumns(), x);
-		auto parsedA = miniA.getParsedMatrix();
-		auto parsedI = miniParser(I.getMatrix(), I.getRows(), I.getColumns(), omp_get_max_threads()).getParsedMatrix();
-
-		#pragma omp parallel num_threads(num_threads)
+		for (int64_t j = 0; j < mini_A.getParsedMatrix().size(); j++)
 		{
-			int64_t tid = omp_get_thread_num();
-			for (int64_t j = 0; j < miniA.getNumOfThreadUsed(); j++)
+			int64_t global_row = i + j * x; // Calculate global row index
+			int64_t maxRowIndex = global_row;
+			for (int64_t k = global_row + x; k < arows; k += x)
 			{
-				if (miniA.getThreadForSpecificRow(j) == tid && j != i)
+				if (A.get(k, global_row) > A.get(maxRowIndex, global_row))
 				{
-					int64_t multiplier = A.get(j, i);
+					maxRowIndex = k;
+				}
+			}
 
-					subtractRowThreads(parsedA, j, i, multiplier);
-					subtractRowThreads(parsedI, j, i, multiplier);
+			if (maxRowIndex != global_row)
+			{
+				mini_A.swapRows(global_row, maxRowIndex);
+				mini_I.swapRows(global_row, maxRowIndex);
+			}
+
+			int64_t pivot = mini_A.get(global_row, global_row);
+
+			divideRowThreads(mini_A, global_row, pivot);
+			divideRowThreads(mini_I, global_row, pivot);
+
+			for (int64_t j = 0; j < arows; j++)
+			{
+				if (j != global_row)
+				{
+					int64_t multiplier = A.get(j, global_row);
+
+					subtractRowThreads(mini_A, j, global_row, multiplier);
+					subtractRowThreads(mini_I, j, global_row, multiplier);
 				}
 			}
 
 			#pragma omp barrier
-			if (tid == 0) 
+			#pragma omp single
+			for (int64_t i = 0; i < arows; i++)
 			{
-				for (int64_t j = 0; j < miniA.getNumOfThreadUsed(); j++) 
-				{
-					for (int64_t k = 0; k < A.getColumns(); k++) 
-					{
-						A.set(j, k, parsedA[j][k]);
-					}
-				}
+				int mini_matrix_idx = i % x;
+				A.setRow(i, mini[mini_matrix_idx].getRow(i));
 			}
-			if (tid == 1) 
+			#pragma omp single
+			for (int64_t i = 0; i < arows; i++)
 			{
-				for (int64_t j = 0; j < miniI.getNumOfThreadUsed(); j++)
-				{
-					for (int64_t k = 0; k < I.getColumns(); k++)
-					{
-						I.set(j, k, parsedI[j][k]);
-					}
-				}
+				int mini_matrix_idx = i % x;
+				I.setRow(i, miniI[mini_matrix_idx].getRow(i));
 			}
-		#pragma omp barrier
 		}
 	}
+
 }
 
 
@@ -151,3 +148,62 @@ myMatrix ParallelGaussAdvanced::Solve(myMatrix& A)
 }
 
 
+
+/*	//auto miniA = miniParser(A.getMatrix(), A.getRows(), A.getColumns(), x);
+	//auto miniI = miniParser(I.getMatrix(), A.getRows(), A.getColumns(), x);
+	//auto parsedA = miniA.getParsedMatrix();
+	//auto parsedI = miniParser(I.getMatrix(), I.getRows(), I.getColumns(), omp_get_max_threads()).getParsedMatrix();
+
+	/*int i = 0;
+	for (const auto& row : parsedA)
+	{
+		for (const auto& col : row)
+		{
+			std::cout << col << " ";
+		}
+		std::cout << "thread: " << miniA.getThreadForSpecificRow(i) << std::endl;
+		i++;
+	}*/
+
+
+	/*
+	#pragma omp parallel for num_threads(x)
+		for (int i = 0; i < x; i++)
+		{
+			minimatrix& mini_A = mini[i];
+
+			for (int64_t j = 0; j < mini_A.getParsedMatrix().size(); j++)
+			{
+				int64_t global_row = i + j * x;
+				int64_t maxRowIndex = global_row;
+				for (int64_t k = global_row + x; k < arows; k += x)
+				{
+					if (A.get(k, global_row) > A.get(maxRowIndex, global_row))
+					{
+						maxRowIndex = k;
+					}
+				}
+
+				if (maxRowIndex != global_row)
+				{
+					A.swapRows(global_row, maxRowIndex);
+					I.swapRows(global_row, maxRowIndex);
+				}
+
+				int64_t pivot = A.get(global_row, global_row);
+
+				divideRow(A, global_row, pivot);
+				divideRow(I, global_row, pivot);
+
+				for (int64_t j = 0; j < arows; j++)
+				{
+					if (j != global_row)
+					{
+						int64_t multiplier = A.get(j, global_row);
+
+						subtractRow(A, j, global_row, multiplier);
+						subtractRow(I, j, global_row, multiplier);
+					}
+				}
+			}
+		}*/

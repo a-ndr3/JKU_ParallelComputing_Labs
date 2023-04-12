@@ -6,7 +6,7 @@ namespace globals
 
 	extern int threadsAmount{ 3 };
 
-	extern int seed{ 109 }; //54
+	extern int seed{ 32456 }; //54
 
 	extern int matrixSize{ 4 };
 

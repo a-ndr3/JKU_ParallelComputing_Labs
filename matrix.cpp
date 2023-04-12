@@ -115,3 +115,10 @@ std::vector<int64_t> myMatrix::getWholeRow(int rowN)
 	}
 	return temp;
 }
+
+void myMatrix::setRow(int rowN, std::vector<int64_t> row)
+{
+	for (int j = 0; j < columns; ++j) {
+		matrix[rowN][j] = row[j];
+	}
+}

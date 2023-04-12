@@ -37,6 +37,8 @@ public:
 
    std::vector<int64_t> getWholeRow(int rowN);
 
+   void setRow(int rowN, std::vector<int64_t> row);
+
 };
 
 #endif
