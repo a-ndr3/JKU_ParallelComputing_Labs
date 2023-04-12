@@ -43,6 +43,11 @@ public:
     {
         threads = threadAmount;
     }
+    ~minimatrix() 
+    {
+        parsedMatrix.clear();
+       // mini_matrix_row_indices.clear();
+    };
     
     void parse(myMatrix& matr, int threadId);
     void update(myMatrix& matr, int threadId);

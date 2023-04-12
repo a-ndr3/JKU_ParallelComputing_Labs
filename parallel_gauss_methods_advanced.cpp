@@ -124,8 +124,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 					auto c = ind[k];
 
 					A.setRow(c, mini[i].getRow(k));
-				}
-				A.print();
+				}				
 			}
 			
 			#pragma parallel for
@@ -140,7 +139,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 					I.setRow(c, miniI[i].getRow(k));
 				}
 			}
-		
+	#pragma omp barrier
 	}
 }
 
@@ -165,77 +164,3 @@ myMatrix ParallelGaussAdvanced::Solve(myMatrix& A)
 
 	return I;
 }
-
-
-/*
-	for (int i = 0; i < threads; i++)
-	{
-		minimatrix& mini_A = mini[i];
-		minimatrix& mini_I = miniI[i];
-		auto rowInd = mini_A.getRowIndexes(i);
-
-
-
-
-
-		#pragma omp barrier
-		#pragma omp single
-		for (int64_t i = 0; i < arows; i++)
-		{
-			int mini_matrix_idx = i % threads;
-			A.setRow(i, mini[mini_matrix_idx].getRow(i));
-		}
-		#pragma omp single
-		for (int64_t i = 0; i < arows; i++)
-		{
-			int mini_matrix_idx = i % threads;
-			I.setRow(i, miniI[mini_matrix_idx].getRow(i));
-		}
-	}
-*/
-
-/*
-for (int64_t j = 0; j < mini_A.getParsedMatrix().size(); j++)
-		{
-			int64_t global_row = i + j * threads;
-			int64_t maxRowIndex = global_row;
-
-			for (int64_t k = global_row + threads; k < arows; k += threads)
-			{
-				if (A.get(k, global_row) > A.get(maxRowIndex, global_row))
-				{
-					maxRowIndex = k;
-				}
-			}
-
-			if (maxRowIndex != global_row)
-			{
-				mini_A.swapRows(global_row, maxRowIndex);
-				mini_I.swapRows(global_row, maxRowIndex);
-			}
-
-			int64_t pivot = mini_A.get(global_row, global_row);
-
-			divideRowThreads(mini_A, global_row, pivot);
-			divideRowThreads(mini_I, global_row, pivot);
-
-
-			auto rowStep = A.getWholeRow(global_row);
-			for (int64_t k = 0; k < arows; k++)
-			{
-				//int64_t local_row = k % x;
-
-				if (k != global_row && std::find(rowInd.begin(), rowInd.end(), k) != rowInd.end()) //&& mini_A.existanceOfRow(local_row))
-				{
-					auto specific_index_of_row_that_stored_in_a_thread = std::distance(rowInd.begin(), std::find_if(rowInd.begin(), rowInd.end(), [k](int64_t value) {
-						return value == k;
-						}));
-
-					int64_t multiplier = A.get(j, global_row); //mini[k % x].get(local_row, global_row);
-
-					subtractRowThreads(mini_A, specific_index_of_row_that_stored_in_a_thread, rowStep, multiplier);
-					subtractRowThreads(mini_I, specific_index_of_row_that_stored_in_a_thread, rowStep, multiplier);
-				}
-			}
-		}
-*/
