@@ -115,3 +115,8 @@ int64_t minimatrix::get(int64_t row, int64_t col) {
 vector<int64_t> minimatrix::getRowIndexes(int num) {
 	return mini_matrix_row_indices[num];
 }
+
+bool minimatrix::existanceOfRow(int64_t rowN)
+{
+	return rowN < parsedMatrix.size();
+}

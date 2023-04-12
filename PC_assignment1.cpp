@@ -141,11 +141,11 @@ int main(int argc, char* args[])
 		bool x = true;
 
 		A.fill_matrix(globals::seed);
-		//A.print();
+		A.print();
 		myMatrix result = gauss.Solve(A);
 
-		//std::cout << "______________" << std::endl;
-		//result.print();
+		std::cout << "______________" << std::endl;
+		result.print();
 
 		//A.fill_matrix(globals::seed);
 		//x = gauss.checkIfInversionIsCorrect(A, result);
