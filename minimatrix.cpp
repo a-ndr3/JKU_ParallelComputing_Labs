@@ -2,18 +2,19 @@
 #include <iostream>
 
 std::vector<std::vector<int64_t>> parsedMatrix;
+vector<std::vector<int64_t>> mini_matrix_row_indices;
 
 void miniParser::parseMatrix() {
-	
+
 	vector<std::vector<int64_t>> localPars;
 	vector<int64_t> localLines;
 
 	for (int i = 0; i < rows; ++i) {
-		
+
 		auto th = i % threadsAmount;
-		
+
 		std::vector<int64_t> temp;
-		for (int row = 0; row < rows; ++row) 
+		for (int row = 0; row < rows; ++row)
 		{
 			temp.push_back(matrix[i][row]);
 		}
@@ -27,7 +28,7 @@ void miniParser::parseMatrix() {
 	lineToThread = localLines;
 }
 
-int miniParser::getThreadForSpecificRow(int64_t rowNumber) 
+int miniParser::getThreadForSpecificRow(int64_t rowNumber)
 {
 	return lineToThread[rowNumber];
 }
@@ -38,61 +39,79 @@ int miniParser::getNumOfThreadUsed()
 }
 
 
-	void minimatrix::parse(myMatrix& matrix, int threadId) 
+void minimatrix::parse(myMatrix& matrix, int threadId)
+{
+	vector<std::vector<int64_t>> localPars;
+	vector<std::vector<int64_t>> localind(threads, vector<int64_t>());
+
+	for (int i = 0; i < matrix.getRows(); ++i)
 	{
-		vector<std::vector<int64_t>> localPars;
 
-		for (int i = 0; i < matrix.getRows(); ++i) {
+		auto th = i % threads;
 
-			auto th = i % threads;
-
-			if (th == threadId)
+		if (th == threadId)
+		{
+			std::vector<int64_t> temp;
+			for (int row = 0; row < matrix.getRows(); ++row)
 			{
-				std::vector<int64_t> temp;
-				for (int row = 0; row < matrix.getRows(); ++row)
-				{
-					temp.push_back(matrix[i][row]);
-				}
-				localPars.push_back(temp);
+				temp.push_back(matrix[i][row]);
 			}
-		}
-		parsedMatrix = localPars;
-	}
-	
-	void minimatrix::update(myMatrix& matrix, int threadId)
-	{	
-		for (int i = 0; i < parsedMatrix.size(); ++i) {
-
-			auto th = i % threads;
-
-			if (th == threadId) 
-			{
-				std::vector<int64_t> temp;
-				
-				for (int row = 0; row < matrix.getRows(); ++row)
-				{
-					temp.push_back(matrix[i][row]);
-				}
-				swap(parsedMatrix[threadId], temp);
-			}
+			localPars.push_back(temp); localind[th].push_back(i);
 		}
 	}
 
-	void minimatrix::swapRows(int64_t row1, int64_t row2)
+	for (size_t i = 0; i < localPars.size(); i++)
 	{
-		swap(parsedMatrix[row1], parsedMatrix[row2]);
+		parsedMatrix.push_back(localPars[i]);
 	}
 
-	std::vector<int64_t> minimatrix::getRow(int64_t row) {
-
-		return parsedMatrix[row];
+	for (auto i : localind)
+	{
+		if (i.size() != 0)
+		{
+			mini_matrix_row_indices.push_back(i);
+		}
 	}
+}
 
-	void minimatrix::setRow(int64_t row, const std::vector<int64_t>& new_row) {
+void minimatrix::update(myMatrix& matrix, int threadId)
+{
+	for (int i = 0; i < parsedMatrix.size(); ++i) {
 
-		parsedMatrix[row] = new_row;
+		auto th = i % threads;
+
+		if (th == threadId)
+		{
+			std::vector<int64_t> temp;
+
+			for (int row = 0; row < matrix.getRows(); ++row)
+			{
+				temp.push_back(matrix[i][row]);
+			}
+			swap(parsedMatrix[threadId], temp);
+		}
 	}
+}
 
-	int64_t minimatrix::get(int64_t row, int64_t col) {
-		return parsedMatrix[row][col];
-	}
+void minimatrix::swapRows(int64_t row1, int64_t row2)
+{
+	swap(parsedMatrix[row1], parsedMatrix[row2]);
+}
+
+std::vector<int64_t> minimatrix::getRow(int64_t row) {
+
+	return parsedMatrix[row];
+}
+
+void minimatrix::setRow(int64_t row, const std::vector<int64_t>& new_row) {
+
+	parsedMatrix[row] = new_row;
+}
+
+int64_t minimatrix::get(int64_t row, int64_t col) {
+	return parsedMatrix[row][col];
+}
+
+vector<int64_t> minimatrix::getRowIndexes(int num) {
+	return mini_matrix_row_indices[num];
+}

@@ -59,7 +59,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 		mmatr->parse(A, i);
 		mini.push_back(*mmatr); // не забыть что появляются пустые вектора когда тредов больше чем размер матрицы
 	}
-
+	
 	for (int i = 0; i < x; i++)
 	{
 		auto mmatr = new minimatrix(x);
@@ -72,10 +72,12 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 	{
 		minimatrix& mini_A = mini[i];
 		minimatrix& mini_I = miniI[i];
+		auto mini_A_row_indices = mini_A.getRowIndexes(i);
 
 		for (int64_t j = 0; j < mini_A.getParsedMatrix().size(); j++)
 		{
-			int64_t global_row = i + j * x; // Calculate global row index
+			int64_t global_row = mini_A_row_indices[j];
+			//int64_t global_row = i + j * x;
 			int64_t maxRowIndex = global_row;
 			for (int64_t k = global_row + x; k < arows; k += x)
 			{
@@ -96,17 +98,18 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 			divideRowThreads(mini_A, global_row, pivot);
 			divideRowThreads(mini_I, global_row, pivot);
 
-			for (int64_t j = 0; j < arows; j++)
+			for (int64_t k = 0; k < arows; k++)
 			{
-				if (j != global_row)
+				if (k != global_row)
 				{
-					int64_t multiplier = A.get(j, global_row);
+					int64_t local_row = k / x;
+					int64_t multiplier = mini[k % x].get(local_row, global_row);
 
-					subtractRowThreads(mini_A, j, global_row, multiplier);
-					subtractRowThreads(mini_I, j, global_row, multiplier);
+					subtractRowThreads(mini_A, local_row, j, multiplier);
+					subtractRowThreads(mini_I, k, global_row, multiplier);
 				}
 			}
-
+		}
 			#pragma omp barrier
 			#pragma omp single
 			for (int64_t i = 0; i < arows; i++)
@@ -120,7 +123,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 				int mini_matrix_idx = i % x;
 				I.setRow(i, miniI[mini_matrix_idx].getRow(i));
 			}
-		}
+		
 	}
 
 }
