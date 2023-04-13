@@ -32,3 +32,7 @@ double myBenchmarks::getElapsedTime()
 	return elapsed;
 }
 
+double myBenchmarks::getStartMinusGetTime()
+{
+	return omp_get_wtime() - start;
+}

@@ -18,6 +18,7 @@ public:
 	void stopTimer();
 
 	double getElapsedTime();
+	double getStartMinusGetTime();
 };
 
 #endif

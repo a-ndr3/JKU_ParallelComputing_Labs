@@ -134,9 +134,9 @@ int main(int argc, char* args[])
 #pragma endregion
 */
 	
-	ParallelGauss gauss;
+	ParallelGaussAdvanced gauss;
 	//ParallelGauss gauss;
-	for (int i = 500; i < 501; i++)
+	for (int i = 400; i < 401; i++)
 	{
 		myMatrix A(i);
 		bool x = true;

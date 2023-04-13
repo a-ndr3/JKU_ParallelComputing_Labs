@@ -30,3 +30,4 @@ endif()
 
 # TODO: Add tests and install targets if needed.
 
+set_target_properties(${BUILD_TARGET} PROPERTIES LINK_FLAGS "/PROFILE")
