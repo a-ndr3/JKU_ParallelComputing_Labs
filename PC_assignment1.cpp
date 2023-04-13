@@ -134,9 +134,9 @@ int main(int argc, char* args[])
 #pragma endregion
 */
 	
-	ParallelGaussAdvanced gauss;
+	ParallelGauss gauss;
 	//ParallelGauss gauss;
-	for (int i = 5; i < 6; i++)
+	for (int i = 500; i < 501; i++)
 	{
 		myMatrix A(i);
 		bool x = true;
@@ -148,13 +148,13 @@ int main(int argc, char* args[])
 		//std::cout << "______________" << std::endl;
 		//result.print();
 
-		A.fill_matrix(globals::seed);
-		x = gauss.checkIfInversionIsCorrect(A, result);
+		//A.fill_matrix(globals::seed);
+		//x = gauss.checkIfInversionIsCorrect(A, result);
 
-		if (!x)
-		{
-			std::cout << "Error with i = " << i << std::endl;
-		}
+		//if (!x)
+		//{
+		//	std::cout << "Error with i = " << i << std::endl;
+		//}
 		
 	}
 }

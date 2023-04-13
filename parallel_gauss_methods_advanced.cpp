@@ -42,6 +42,14 @@ void ParallelGaussAdvanced::subtractRow(myMatrix& A, int64_t targetRow, int64_t 
 	}
 }
 
+static void printDebug(vector<minimatrix>& mini, myMatrix& A) 
+{
+	cout << "A: " << endl;
+	A.print();
+	cout << "mini: " << endl;
+	for (auto& x : mini)
+		x.print();
+}
 
 void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 {
@@ -56,11 +64,25 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 	vector<minimatrix> mini;
 	vector<minimatrix> miniI;
 
+	mini.reserve(threads);
+	miniI.reserve(threads);
+
+	for (int i = 0; i < threads; i++)
+	{
+		auto mmatr = std::make_unique<minimatrix>(threads);
+		mmatr->parse(A, i);
+		mini.push_back(*mmatr);
+	}
+
+	for (int i = 0; i < threads; i++)
+	{
+		auto mmatr = std::make_unique<minimatrix>(threads);
+		mmatr->parse(I, i);
+		miniI.push_back(*mmatr);
+	}
+
 	for (int64_t i = 0; i < arows; i++)
 	{
-		mini.clear();
-		miniI.clear();
-
 		int64_t maxRowIndex = i;
 		for (int64_t k = i + 1; k < arows; k++)
 		{
@@ -74,72 +96,58 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 		{
 			A.swapRows(i, maxRowIndex);
 			I.swapRows(i, maxRowIndex);
+
+			int64_t iswap = i % threads; 
+			int64_t maxswap = maxRowIndex % threads;			
+
+			mini[iswap].updateRow(i, A.getWholeRow(i));
+			miniI[iswap].updateRow(i, I.getWholeRow(i));
+
+			mini[maxswap].updateRow(maxRowIndex, A.getWholeRow(maxRowIndex));
+			miniI[maxswap].updateRow(maxRowIndex, I.getWholeRow(maxRowIndex));
 		}
 
 		int64_t pivot = A.get(i, i);
 
 		divideRow(A, i, pivot);
 		divideRow(I, i, pivot);
+		
+		int64_t iswap = i % threads;
+		mini[iswap].updateRow(i, A.getWholeRow(i));
+		miniI[iswap].updateRow(i, I.getWholeRow(i));		
 
-		for (int i = 0; i < threads; i++)
+		#pragma omp parallel for num_threads(threads)
+		for (int t = 0; t < threads; t++)
 		{
-			auto mmatr = std::make_unique<minimatrix>(threads);
-			mmatr->parse(A, i);
-			mini.push_back(*mmatr); // не забыть что появляются пустые вектора когда тредов больше чем размер матрицы
-		}
+			minimatrix& mini_A = mini[t];
+			minimatrix& mini_I = miniI[t];
+			auto rowInd = mini_A.getRowIndexes(t);
 
-		for (int i = 0; i < threads; i++)
-		{
-			auto mmatr = std::make_unique<minimatrix>(threads);
-			mmatr->parse(I, i);
-			miniI.push_back(*mmatr);
-		}
-
-			#pragma omp parallel for num_threads(threads)
-			for (int t = 0; t < threads; t++)
+			for (int64_t j = 0; j < rowInd.size(); j++)
 			{
-				minimatrix& mini_A = mini[t];
-				minimatrix& mini_I = miniI[t];
-				auto rowInd = mini_A.getRowIndexes(t);
-
-				for (int64_t j = 0; j < rowInd.size(); j++)
+				if (rowInd[j] != i)
 				{
-					if (rowInd[j] != i)
-					{
-						int64_t multiplier = A.get(rowInd[j], i);
+					int64_t multiplier = A.get(rowInd[j], i);
 
-						subtractRowThreads(mini_A, j, A.getWholeRow(i), multiplier);
-						subtractRowThreads(mini_I, j, I.getWholeRow(i), multiplier);
-					}
+					subtractRowThreads(mini_A, j, A.getWholeRow(i), multiplier);
+					subtractRowThreads(mini_I, j, I.getWholeRow(i), multiplier);
 				}
 			}
-			
-			#pragma omp parallel for
-			for (int i = 0; i < mini.size(); i++)
+		}
+
+		#pragma omp parallel for
+		for (int i = 0; i < mini.size(); i++)
+		{
+			auto ind = mini[i].getRowIndexes(i);
+
+			for (int k = 0; k < ind.size(); k++)
 			{
-				auto ind = mini[i].getRowIndexes(i);
+				auto c = ind[k];
 
-				for (int k = 0; k < ind.size(); k++)
-				{
-					auto c = ind[k];
-
-					A.setRow(c, mini[i].getRow(k));
-				}				
+				A.setRow(c, mini[i].getRow(k));
+				I.setRow(c, miniI[i].getRow(k));
 			}
-			
-			#pragma omp parallel for
-			for (int i = 0; i < miniI.size(); i++)
-			{
-				auto ind = miniI[i].getRowIndexes(i);
-
-				for (int k = 0; k < ind.size(); k++)
-				{
-					auto c = ind[k];
-
-					I.setRow(c, miniI[i].getRow(k));
-				}
-			}
-	//#pragma omp barrier
+		}
 	}
 }
 

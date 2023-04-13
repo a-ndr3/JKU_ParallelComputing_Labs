@@ -74,6 +74,54 @@ void minimatrix::parse(myMatrix& matrix, int threadId)
 	}
 }
 
+void minimatrix::parse_in_threads(myMatrix& matrix, int threadId)
+{
+	vector<vector<int64_t>> localParsedMatrix;
+	vector<std::vector<int64_t>> localind(threads, vector<int64_t>());
+	
+	#pragma omp parallel for firstprivate(localParsedMatrix)
+	for (int i = 0; i < matrix.getRows(); ++i)
+	{
+		int th = i % threads;
+		if (th == threadId)
+		{
+			std::vector<int64_t> temp;
+			for (int row = 0; row < matrix.getRows(); ++row)
+			{
+				temp.push_back(matrix[i][row]);
+			}
+
+			localParsedMatrix.push_back(temp);
+
+			#pragma omp critical
+			{
+				localind[th].push_back(i);
+			}
+		}
+	}
+
+#pragma omp critical
+	{
+		for (size_t i = 0; i < localParsedMatrix.size(); i++)
+		{
+			parsedMatrix.push_back(localParsedMatrix[i]);
+		}
+
+		for (auto i : localind)
+		{
+			if (i.size() != 0)
+			{
+				mini_matrix_row_indices.push_back(i);
+			}
+		}
+	}
+}
+
+void minimatrix::clear()
+{
+	parsedMatrix.clear();
+}
+
 void minimatrix::update(myMatrix& matrix, int threadId)
 {
 	for (int i = 0; i < parsedMatrix.size(); ++i) {
@@ -119,4 +167,31 @@ vector<int64_t> minimatrix::getRowIndexes(int num) {
 bool minimatrix::existanceOfRow(int64_t rowN)
 {
 	return rowN < parsedMatrix.size();
+}
+
+void minimatrix::updateRow(int64_t row, const std::vector<int64_t>& newRow)
+{
+	for (size_t i = 0; i < mini_matrix_row_indices.size(); ++i) 
+	{
+		auto it = std::find(mini_matrix_row_indices[i].begin(), mini_matrix_row_indices[i].end(), row);
+		
+		if (it != mini_matrix_row_indices[i].end()) 
+		{
+			size_t index_in_parsed_matrix = std::distance(mini_matrix_row_indices[i].begin(), it);
+			parsedMatrix[index_in_parsed_matrix] = newRow;
+			break;
+		}
+	}
+}
+
+void minimatrix::print() 
+{
+	for (size_t i = 0; i < parsedMatrix.size(); ++i)
+	{
+		for (size_t j = 0; j < parsedMatrix[i].size(); ++j)
+		{
+			std::cout << parsedMatrix[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 }

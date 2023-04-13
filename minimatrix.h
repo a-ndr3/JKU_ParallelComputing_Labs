@@ -39,16 +39,10 @@ private:
     int threads;
 
 public:
-    minimatrix(int threadAmount)
-    {
-        threads = threadAmount;
-    }
-    ~minimatrix() 
-    {
-        parsedMatrix.clear();
-       // mini_matrix_row_indices.clear();
-    };
-    
+    minimatrix(int threadAmount) : threads(threadAmount) {}
+    minimatrix() {};
+
+
     void parse(myMatrix& matr, int threadId);
     void update(myMatrix& matr, int threadId);
     
@@ -62,6 +56,10 @@ public:
     int64_t get(int64_t rowN, int64_t colN);
     vector<int64_t> getRowIndexes(int num);
     bool existanceOfRow(int64_t rowN);
+    void clear();
+    void parse_in_threads(myMatrix& matrix, int threadId);
+    void updateRow(int64_t row, const std::vector<int64_t>& newRow);
+    void print();
 };
 
 
