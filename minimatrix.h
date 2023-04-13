@@ -54,7 +54,7 @@ public:
     vector<int64_t>& getRow(int64_t rowN);
     void setRow(int64_t rowN, const vector<int64_t>& row);
     int64_t get(int64_t rowN, int64_t colN);
-    vector<int64_t> getRowIndexes(int num);
+    vector<int64_t>& getRowIndexes(int num);
     bool existanceOfRow(int64_t rowN);
     void clear();
     void parse_in_threads(myMatrix& matrix, int threadId);

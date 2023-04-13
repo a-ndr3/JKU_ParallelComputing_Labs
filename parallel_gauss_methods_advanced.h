@@ -12,7 +12,7 @@ class ParallelGaussAdvanced : public Gauss
 
 	 void diagonalize(myMatrix& A, myMatrix& I) override;
 
-	 void subtractRowThreads(minimatrix& A, int64_t targetRow, vector<int64_t> sourceRow, int64_t multiplier);
+	 void subtractRowThreads(minimatrix& A, int64_t targetRow, int64_t* sourceRow, int64_t multiplier);
 	 void divideRowThreads(minimatrix& A, int64_t row, int64_t divisor);
 public:
 	ParallelGaussAdvanced() : Gauss() {};

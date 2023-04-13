@@ -34,6 +34,7 @@ public:
     }
 
     int64_t** getMatrix();
+    int64_t* getRowFromMatrix(int rowN);
 
    std::vector<int64_t> getWholeRow(int rowN);
 

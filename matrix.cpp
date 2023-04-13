@@ -116,6 +116,11 @@ std::vector<int64_t> myMatrix::getWholeRow(int rowN)
 	return temp;
 }
 
+int64_t* myMatrix::getRowFromMatrix(int rowN)
+{
+	return matrix[rowN];
+}
+
 void myMatrix::setRow(int rowN, std::vector<int64_t> row)
 {
 	for (int j = 0; j < columns; ++j) {

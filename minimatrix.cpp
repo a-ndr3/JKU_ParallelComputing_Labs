@@ -46,7 +46,6 @@ void minimatrix::parse(myMatrix& matrix, int threadId)
 
 	for (int i = 0; i < matrix.getRows(); ++i)
 	{
-
 		auto th = i % threads;
 
 		if (th == threadId)
@@ -160,7 +159,7 @@ int64_t minimatrix::get(int64_t row, int64_t col) {
 	return parsedMatrix[row][col];
 }
 
-vector<int64_t> minimatrix::getRowIndexes(int num) {
+vector<int64_t>& minimatrix::getRowIndexes(int num) {
 	return mini_matrix_row_indices[num];
 }
 

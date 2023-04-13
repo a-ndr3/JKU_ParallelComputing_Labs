@@ -24,7 +24,7 @@ void ParallelGaussAdvanced::divideRowThreads(minimatrix& A, int64_t row, int64_t
 	}
 }
 
-void ParallelGaussAdvanced::subtractRowThreads(minimatrix& A, int64_t targetRow, vector<int64_t> sourceRow, int64_t multiplier)
+void ParallelGaussAdvanced::subtractRowThreads(minimatrix& A, int64_t targetRow, int64_t* sourceRow, int64_t multiplier)
 {
 	auto& workrow = A.getRow(targetRow);
 
@@ -61,15 +61,12 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 		threads = arows;
 	}
 
-	myBenchmarks be;
-
 	vector<minimatrix> mini;
 	vector<minimatrix> miniI;
 
 	mini.reserve(threads);
 	miniI.reserve(threads);
 
-	be.startTimer();
 	for (int i = 0; i < threads; i++)
 	{
 		auto mmatr = std::make_unique<minimatrix>(threads);
@@ -83,9 +80,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 		mmatr->parse(I, i);
 		miniI.push_back(*mmatr);
 	}
-	be.stopTimer();
-	cout <<"push :" << be.getElapsedTime() << endl;
-	be.startTimer();
+
 	for (int64_t i = 0; i < arows; i++)
 	{
 		int64_t maxRowIndex = i;
@@ -123,32 +118,27 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 		mini[iswap].updateRow(i, A.getWholeRow(i));
 		miniI[iswap].updateRow(i, I.getWholeRow(i));		
 		
-//		cout << "after swap : " << be.getStartMinusGetTime() << endl;
 
-		//#pragma omp parallel for schedule(static) //schedule(dynamic)
+		#pragma omp parallel for num_threads(threads) 
 		for (int t = 0; t < threads; t++)
 		{
+			int threadId = omp_get_thread_num();
 
 			minimatrix& mini_A = mini[t];
 			minimatrix& mini_I = miniI[t];
-			auto rowInd = mini_A.getRowIndexes(t);
-//			cout << "inside for after get indices = " << "  time = " << be.getStartMinusGetTime() << endl;
+			auto& rowInd = mini_A.getRowIndexes(t);
 
 			for (int64_t j = 0; j < rowInd.size(); j++)
 			{
-//				cout << "rowInd.size()  " << "  time = " << be.getStartMinusGetTime() << endl;
 				if (rowInd[j] != i)
 				{
 					int64_t multiplier = A.get(rowInd[j], i);
 					
-					//cout << "get multiplier time = " << be.getStartMinusGetTime() << endl;
-					subtractRowThreads(mini_A, j, A.getWholeRow(i), multiplier);
-					subtractRowThreads(mini_I, j, I.getWholeRow(i), multiplier);
-					//cout << "after substraction time = " << be.getStartMinusGetTime() << endl;
+					subtractRowThreads(mini_A, j, A.getRowFromMatrix(i), multiplier);
+					subtractRowThreads(mini_I, j, I.getRowFromMatrix(i), multiplier);
 				}
 			}
 		}
-//		cout << "after i= " << i  << "  time = " << be.getStartMinusGetTime() << endl;
 		#pragma omp parallel for
 		for (int i = 0; i < mini.size(); i++)
 		{
@@ -162,8 +152,6 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 				I.setRow(c, miniI[i].getRow(k));
 			}
 		}
-
-//		cout << "after push into A = " << be.getStartMinusGetTime() << endl;
 	}
 }
 
