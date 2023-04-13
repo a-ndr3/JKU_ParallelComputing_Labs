@@ -83,19 +83,19 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 
 		for (int i = 0; i < threads; i++)
 		{
-			auto mmatr = new minimatrix(threads);
+			auto mmatr = std::make_unique<minimatrix>(threads);
 			mmatr->parse(A, i);
 			mini.push_back(*mmatr); // не забыть что появляются пустые вектора когда тредов больше чем размер матрицы
 		}
 
 		for (int i = 0; i < threads; i++)
 		{
-			auto mmatr = new minimatrix(threads);
+			auto mmatr = std::make_unique<minimatrix>(threads);
 			mmatr->parse(I, i);
 			miniI.push_back(*mmatr);
 		}
 
-			#pragma parallel for num_threads(threads)
+			#pragma omp parallel for num_threads(threads)
 			for (int t = 0; t < threads; t++)
 			{
 				minimatrix& mini_A = mini[t];
@@ -114,7 +114,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 				}
 			}
 			
-			#pragma parallel for
+			#pragma omp parallel for
 			for (int i = 0; i < mini.size(); i++)
 			{
 				auto ind = mini[i].getRowIndexes(i);
@@ -127,7 +127,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 				}				
 			}
 			
-			#pragma parallel for
+			#pragma omp parallel for
 			for (int i = 0; i < miniI.size(); i++)
 			{
 				auto ind = miniI[i].getRowIndexes(i);
@@ -139,7 +139,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 					I.setRow(c, miniI[i].getRow(k));
 				}
 			}
-	#pragma omp barrier
+	//#pragma omp barrier
 	}
 }
 
