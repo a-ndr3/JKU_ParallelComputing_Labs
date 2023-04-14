@@ -136,17 +136,17 @@ int main(int argc, char* args[])
 	
 	ParallelGaussAdvanced gauss;
 	//ParallelGauss gauss;
-	for (int i = 1500; i < 1501; i++)
+	for (int i = 5; i < 6; i++)
 	{
 		myMatrix A(i);
 		bool x = true;
 
 		A.fill_matrix(globals::seed);
-		//A.print();
+		A.print();
 		myMatrix result = gauss.Solve(A);
 
 		//std::cout << "______________" << std::endl;
-		//result.print();
+		result.print();
 
 		//A.fill_matrix(globals::seed);
 		//x = gauss.checkIfInversionIsCorrect(A, result);

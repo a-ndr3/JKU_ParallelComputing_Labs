@@ -123,6 +123,7 @@ int64_t* myMatrix::getRowFromMatrix(int rowN)
 
 void myMatrix::setRow(int rowN, std::vector<int64_t> row)
 {
+	#pragma omp parallel for
 	for (int j = 0; j < columns; ++j) {
 		matrix[rowN][j] = row[j];
 	}
