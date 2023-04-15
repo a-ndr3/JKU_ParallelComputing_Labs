@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include "matrix.h"
+#include <cstring>
 
 int64_t** matrix;
 int64_t rows;
@@ -120,7 +121,7 @@ int64_t* myMatrix::getRowFromMatrix(int rowN)
 {
 	return matrix[rowN];
 }
-
+//works in parallel with omp parallel for, only used in parallel advanced to update a row of the matrix
 void myMatrix::setRow(int rowN, std::vector<int64_t> row)
 {
 	#pragma omp parallel for

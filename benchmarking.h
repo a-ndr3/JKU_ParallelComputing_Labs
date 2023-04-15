@@ -1,5 +1,5 @@
-#ifndef benchmarking_h
-#define benchmarking_h
+#ifndef BENCHMARKING_H
+#define BENCHMARKING_H
 
 #include <omp.h>
 

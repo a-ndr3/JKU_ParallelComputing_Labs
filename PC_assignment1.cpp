@@ -37,6 +37,7 @@ void parseArgs(const std::vector<std::string>& args)
 			if (args[i + 1] == "max")
 			{
 				globals::threadMode = globals::ThreadMode::MAX;
+				globals::threadsAmount = omp_get_max_threads();
 			}
 			else if (args[i + 1] == "loc")
 			{
@@ -45,15 +46,15 @@ void parseArgs(const std::vector<std::string>& args)
 		}
 		if (args[i] == "-n" && i + 1 < args.size())
 		{
-			globals::matrixSize = std::stol(args[i + 1]);
+			globals::matrixSize = std::stoi(args[i + 1]);
 		}
 		if (args[i] == "-p" && i + 1 < args.size())
 		{
-			globals::primeNumber = std::stol(args[i + 1]);
+			globals::primeNumber = std::stoi(args[i + 1]);
 		}
 		if (args[i] == "-t" && i + 1 < args.size())
 		{
-			globals::threadsAmount = std::stol(args[i + 1]);
+			globals::threadsAmount = std::stoi(args[i + 1]);
 		}
 		if (args[i] == "-s" && i + 1 < args.size())
 		{
@@ -78,19 +79,17 @@ int main(int argc, char* args[])
 
 		Logger::log(str);
 	}
-
-
-	/*myMatrix A(globals::matrixSize);
-	myMatrix* result; bool x = true;
+	
+	myMatrix A(1500);
+	myMatrix* result;
 
 	A.fill_matrix(globals::seed);
-	A.print();
-
+	
 	Gauss gauss;
-	ParallelGauss parallelGaussBasic;
-	ParallelGaussAdvanced parallelGaussAdvanced;*/
+	result = new myMatrix(gauss.Solve(A));
+	/*ParallelGauss parallelGaussBasic;
+	ParallelGaussAdvanced parallelGaussAdvanced;
 
-	/*
 	//ZUSIE switch
 #pragma region Switch_for_ZUSIE
 
@@ -98,33 +97,12 @@ int main(int argc, char* args[])
 	{
 	case globals::Algorithm::SEQ:
 		result = new myMatrix(gauss.Solve(A));
-
-		A.fill_matrix(globals::seed);
-		x = gauss.checkIfInversionIsCorrect(A, *result);
-		A.print();
-		std::cout << "__________" << std::endl;
-		result->print();
-
 		break;
 	case globals::Algorithm::BASIC:
 		result = new myMatrix(parallelGaussBasic.Solve(A));
-
-		A.fill_matrix(globals::seed);
-		x = gauss.checkIfInversionIsCorrect(A, *result);
-		A.print();
-		std::cout << "__________" << std::endl;
-		result->print();
-
 		break;
 	case globals::Algorithm::ADVANCED:
 		result = new myMatrix(parallelGaussAdvanced.Solve(A));
-
-		A.fill_matrix(globals::seed);
-		x = gauss.checkIfInversionIsCorrect(A, *result);
-		A.print();
-		std::cout << "__________" << std::endl;
-		result->print();
-
 		break;
 	default:
 		std::cout << "Invalid algorithm" << std::endl;
@@ -132,8 +110,8 @@ int main(int argc, char* args[])
 		break;
 	}
 #pragma endregion
-*/
-	
+
+	/*
 	ParallelGaussAdvanced gauss;
 	//ParallelGauss gauss;
 	for (int i = 5; i < 6; i++)
@@ -142,11 +120,11 @@ int main(int argc, char* args[])
 		bool x = true;
 
 		A.fill_matrix(globals::seed);
-		A.print();
+		//A.print();
 		myMatrix result = gauss.Solve(A);
 
 		//std::cout << "______________" << std::endl;
-		result.print();
+		//result.print();
 
 		//A.fill_matrix(globals::seed);
 		//x = gauss.checkIfInversionIsCorrect(A, result);
@@ -156,6 +134,6 @@ int main(int argc, char* args[])
 		//	std::cout << "Error with i = " << i << std::endl;
 		//}
 		
-	}
+	}*/
 }
 

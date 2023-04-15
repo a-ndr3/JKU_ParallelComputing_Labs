@@ -32,6 +32,7 @@ double myBenchmarks::getElapsedTime()
 	return elapsed;
 }
 
+/*Returns time without the need to stop timer*/
 double myBenchmarks::getStartMinusGetTime()
 {
 	return omp_get_wtime() - start;

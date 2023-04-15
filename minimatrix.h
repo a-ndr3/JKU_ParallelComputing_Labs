@@ -6,6 +6,7 @@
 
 using namespace std;
 
+/*Wasn't used in the final solution*/
 class miniParser
 {
 private:
@@ -31,13 +32,13 @@ public:
     int getNumOfThreadUsed();
 };
 
-
+/*Main class to handle Parallel Advanced algorithm idea*/
 class minimatrix 
 {
 private:
-    std::vector<std::vector<int64_t>> parsedMatrix;
+    std::vector<std::vector<int64_t>> parsedMatrix; //stores rows to follow round robin idea
     int threads;
-
+    //also has minimatrix_row_to_index vector, check cpp file
 public:
     minimatrix(int threadAmount) : threads(threadAmount) {}
     minimatrix() {};

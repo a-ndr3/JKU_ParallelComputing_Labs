@@ -1,9 +1,12 @@
 #include "minimatrix.h"
 #include <iostream>
+#include <algorithm>
 
 std::vector<std::vector<int64_t>> parsedMatrix;
-vector<std::vector<int64_t>> mini_matrix_row_indices;
+vector<std::vector<int64_t>> mini_matrix_row_indices; //contains real indices of matrix rows (parsed matrix could have indices: 1,8,15..  but in big matrix these rows are 1,3,5)
 
+
+//not included in solution
 void miniParser::parseMatrix() {
 
 	vector<std::vector<int64_t>> localPars;
@@ -39,6 +42,14 @@ int miniParser::getNumOfThreadUsed()
 }
 
 
+
+
+
+//Minimatrix Classes down here
+
+
+
+//Parses matrix to minimatrix for specific thread id
 void minimatrix::parse(myMatrix& matrix, int threadId)
 {
 	vector<std::vector<int64_t>> localPars;
@@ -73,6 +84,7 @@ void minimatrix::parse(myMatrix& matrix, int threadId)
 	}
 }
 
+//parallel solution, wasn't used in the final solution
 void minimatrix::parse_in_threads(myMatrix& matrix, int threadId)
 {
 	vector<vector<int64_t>> localParsedMatrix;
@@ -121,6 +133,7 @@ void minimatrix::clear()
 	parsedMatrix.clear();
 }
 
+//update whole minimatrix of specific thread id
 void minimatrix::update(myMatrix& matrix, int threadId)
 {
 	for (int i = 0; i < parsedMatrix.size(); ++i) {
@@ -155,10 +168,12 @@ void minimatrix::setRow(int64_t row, const std::vector<int64_t>& new_row) {
 	parsedMatrix[row] = new_row;
 }
 
+//returns a specific element of minimatrix
 int64_t minimatrix::get(int64_t row, int64_t col) {
 	return parsedMatrix[row][col];
 }
 
+//returns a "real" indices of rows of myMatrix
 vector<int64_t>& minimatrix::getRowIndexes(int num) {
 	return mini_matrix_row_indices[num];
 }
@@ -168,6 +183,7 @@ bool minimatrix::existanceOfRow(int64_t rowN)
 	return rowN < parsedMatrix.size();
 }
 
+//update specific row of minimatrix
 void minimatrix::updateRow(int64_t row, const std::vector<int64_t>& newRow)
 {
 	for (size_t i = 0; i < mini_matrix_row_indices.size(); ++i) 

@@ -1,5 +1,5 @@
-#ifndef globals_h
-#define globals_h
+#ifndef GLOBALS_H
+#define GLOBALS_H
 #include <cstdint>
 
 namespace globals 

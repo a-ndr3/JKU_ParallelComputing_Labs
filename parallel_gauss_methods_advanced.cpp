@@ -61,12 +61,13 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 		threads = arows;
 	}
 
-	vector<minimatrix> mini;
-	vector<minimatrix> miniI;
+	vector<minimatrix> mini; //contains rows for each thread to work with
+	vector<minimatrix> miniI; //the same for I
 
 	mini.reserve(threads);
 	miniI.reserve(threads);
 
+	//parsing
 	for (int i = 0; i < threads; i++)
 	{
 		auto mmatr = std::make_unique<minimatrix>(threads);
@@ -99,10 +100,10 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 			A.swapRows(i, maxRowIndex);
 			I.swapRows(i, maxRowIndex);
 
-			int64_t iswap = i % threads; 
+			int64_t iswap = i % threads; //get index for splitted rows
 			int64_t maxswap = maxRowIndex % threads;			
 
-			mini[iswap].updateRow(i, A.getWholeRow(i));
+			mini[iswap].updateRow(i, A.getWholeRow(i)); //updates after swap (in both minimatrices)
 			miniI[iswap].updateRow(i, I.getWholeRow(i));
 
 			mini[maxswap].updateRow(maxRowIndex, A.getWholeRow(maxRowIndex));
@@ -138,7 +139,7 @@ void ParallelGaussAdvanced::diagonalize(myMatrix& A, myMatrix& I)
 					subtractRowThreads(mini_I, j, I.getRowFromMatrix(i), multiplier);
 				}
 			}
-		}
+		}//update matrix rows(with data from threads) aka save data 
 		#pragma omp parallel for
 		for (int i = 0; i < mini.size(); i++)
 		{

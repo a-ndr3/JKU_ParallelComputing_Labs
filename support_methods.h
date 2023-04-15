@@ -1,5 +1,5 @@
-#ifndef support_methods_h
-#define support_methods_h
+#ifndef SUPPORT_METHODS_H
+#define SUPPORT_METHODS_H
 
 #include "globals.h"
 #include <math.h>
