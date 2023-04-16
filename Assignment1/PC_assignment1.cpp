@@ -84,7 +84,6 @@ int main(int argc, char* args[])
 	myMatrix* result;
 
 	A.fill_matrix(globals::seed);
-	
 	Gauss gauss;
 	result = new myMatrix(gauss.Solve(A));
 	/*ParallelGauss parallelGaussBasic;
