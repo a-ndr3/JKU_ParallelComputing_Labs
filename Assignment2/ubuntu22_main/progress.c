@@ -3,7 +3,7 @@
 // Copyright (C) 2020, .... [ put your name here ] ....
 /*------------------------------------------------------------------------*/
 
-#define program "atomic"
+#define program "progress"
 
 static const char *usage =
         "usage: " program " <workers> <operations>\n"
@@ -22,10 +22,13 @@ static const char *usage =
 #include <stdlib.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 /*------------------------------------------------------------------------*/
 
 static unsigned num_workers;
+static unsigned f_work = 0;
+
 static uint64_t total_operations;
 
 /*------------------------------------------------------------------------*/
@@ -61,6 +64,7 @@ msg (const char *fmt, ...)
 
 static volatile bool go;
 static volatile uint64_t global_result; //data race
+static pthread_mutex_t mutex_global_result = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct worker worker;
 
@@ -72,18 +76,29 @@ struct worker
 
 static worker *workers;
 
+static void* monitor ()
+{
+    while (f_work < num_workers) {
+        usleep(10000);
+        double percent = (double) global_result / (double) total_operations;
+        printf("\rprog: %d%%", (uint64_t)(percent*100));
+        fflush(stdout);
+    }
+}
+
 static void *
 run (void *ptr)
 {
     worker *worker = ptr;
-    while (!go) //conflict & datarace
+    while (!go)
         ;
     const uint64_t operations = worker->operations;
     uint64_t *p = &global_result;
     for (uint64_t i = 0; i < operations; i++)
-        {
+    {
         __sync_add_and_fetch(p,1);
-        }
+    }
+    __sync_add_and_fetch(&f_work,1); //worker has finished
     return 0;
 }
 
@@ -117,9 +132,6 @@ process_time ()
 int
 main (int argc, char **argv)
 {
-
-    // Parse command line option.
-    //
     if (argc != 3)
     {
         fprintf (stderr, usage, program);
@@ -156,6 +168,11 @@ main (int argc, char **argv)
         }
     }
 
+    pthread_t m_thread;
+
+    if (pthread_create(&m_thread,0,monitor,NULL))
+        die("Exception: no monitor thread!");
+
     for (unsigned i = 0; i < num_workers; i++)
         if (pthread_create (&workers[i].thread, 0, run, workers + i))
             die ("failed to create worker thread %u", i);
@@ -168,6 +185,9 @@ main (int argc, char **argv)
     for (unsigned i = 0; i < num_workers; i++)
         if (pthread_join (workers[i].thread, 0))
             die ("failed to join worker thread %u", i);
+
+    if (pthread_join(m_thread,0))
+        die("Exception: monitor thread failed to join");
 
     free (workers);
 

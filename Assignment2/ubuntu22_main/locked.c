@@ -3,7 +3,7 @@
 // Copyright (C) 2020, .... [ put your name here ] ....
 /*------------------------------------------------------------------------*/
 
-#define program "locked"	// CHANGE THE NAME OF THE PROGRAM!!
+#define program "locked"
 
 static const char *usage =
         "usage: " program " <workers> <operations>\n"

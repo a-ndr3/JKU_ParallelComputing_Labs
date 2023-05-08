@@ -3,7 +3,7 @@
 // Copyright (C) 2020, .... [ put your name here ] ....
 /*------------------------------------------------------------------------*/
 
-#define program "bogus_default"	// CHANGE THE NAME OF THE PROGRAM!!
+#define program "bogus_default"
 
 static const char *usage =
   "usage: " program " <workers> <operations>\n"
@@ -59,8 +59,8 @@ msg (const char *fmt, ...)
 
 // This part is the real 'meat' of the exercise:
 
-static bool go;
-static uint64_t global_result;
+static bool go; //possible data race
+static uint64_t global_result; // data race
 
 typedef struct worker worker;
 
@@ -76,12 +76,12 @@ static void *
 run (void *ptr)
 {
   worker *worker = ptr;
-  while (!go)
+  while (!go) //conflict & possible dr
     ;
   const uint64_t operations = worker->operations;
   uint64_t *p = &global_result;
   for (uint64_t i = 0; i < operations; i++)
-    *p = *p + 1;
+    *p = *p + 1; //data race
   return 0;
 }
 
@@ -161,7 +161,7 @@ main (int argc, char **argv)
   double w = wall_clock_time ();
   double p = process_time ();
 
-  go = true;
+  go = true; //possible dr
 
   for (unsigned i = 0; i < num_workers; i++)
     if (pthread_join (workers[i].thread, 0))

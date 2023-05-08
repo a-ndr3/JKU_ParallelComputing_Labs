@@ -2,8 +2,10 @@
 // Copyright (C) 2019-2020, Armin Biere, Johannes Kepler University Linz
 // Copyright (C) 2020, .... [ put your name here ] ....
 /*------------------------------------------------------------------------*/
+
+/*task 7: based on progress.c, others have additional name part to separate the basis*/
+#define program "local"
 #define CACHE_LINE_SIZE 64
-#define program "local_experiment"	// CHANGE THE NAME OF THE PROGRAM!!
 
 static const char *usage =
         "usage: " program " <workers> <operations>\n"
@@ -27,6 +29,8 @@ static const char *usage =
 /*------------------------------------------------------------------------*/
 
 static unsigned num_workers;
+static unsigned f_work = 0;
+
 static uint64_t total_operations;
 
 /*------------------------------------------------------------------------*/
@@ -61,33 +65,33 @@ msg (const char *fmt, ...)
 // This part is the real 'meat' of the exercise:
 
 static volatile bool go;
-static volatile uint64_t global_result; //data race
-static pthread_mutex_t mutex_global_result = PTHREAD_MUTEX_INITIALIZER;
-static unsigned f_work = 0;
+static volatile uint64_t global_result;
+
+//pthread_mutex_t go_mutex; //for the fix in 'run'
 
 typedef struct worker worker;
 
 struct worker
 {
-    pthread_t thread;
     uint64_t operations;
-    
-    uint64_t localres;
-    char padding[CACHE_LINE_SIZE - sizeof(pthread_t) - 2 * sizeof(uint64_t)];
+    uint64_t localsum;
+    pthread_t thread;
+    //char padding[12]; // to put 2 structs into cache line
+    char padding[CACHE_LINE_SIZE - sizeof(pthread_t) - 2*sizeof(uint64_t)];
 };
 
 static worker *workers;
 
-static void* monitor ()
+static void* monitor()
 {
     while (f_work < num_workers) {
         usleep(10000);
-        printf("\r");
-        for (unsigned i = 0; i < num_workers; i++)
+        for (unsigned i = 0; i<num_workers; i++)
         {
-        double percent = (double) workers[i].localres / (double) total_operations;
-        printf("\r prog %u: %d%%",i, (uint64_t)(percent*100));
-        }
+          double percent = (double) workers[i].localsum / (double) workers[i].operations;
+          printf("--- prog[%u]: %ld%% ---",i, (uint64_t)(percent*100));
+        }      
+        printf("\r");
         fflush(stdout);
     }
 }
@@ -95,19 +99,31 @@ static void* monitor ()
 static void *
 run (void *ptr)
 {
+    //FIX of "possible data race" form helgrind
+    /*bool tempgo;
+    
+    pthread_mutex_lock(&go_mutex);
+      tempgo=go;
+    pthread_mutex_unlock(&go_mutex);
+      
     worker *worker = ptr;
-    while (!go) //conflict & datarace
-        ;
-    const uint64_t operations = worker->operations;
-    uint64_t *p = &global_result;
-    for (uint64_t i = 0; i < operations; i++)
+    
+    while (!tempgo)
     {
-        //pthread_mutex_lock(&mutex_global_result);
-        //*p = *p + 1;                            //possible race with global_result as well
-        //__sync_add_and_fetch(p,1);
-        //pthread_mutex_unlock(&mutex_global_result);
-        worker->localres++;
+      pthread_mutex_lock(&go_mutex);
+      tempgo=go;
+      pthread_mutex_unlock(&go_mutex);
+    }*/
+    
+    worker *worker = ptr;
+    while (!go)
+        ;    
+    const uint64_t operations = worker->operations; 
+    for (uint64_t i = 0; i < operations; i++)
+    {   
+        worker->localsum++;
     }
+    __sync_add_and_fetch(&global_result,worker->localsum);
     __sync_add_and_fetch(&f_work,1);
     return 0;
 }
@@ -142,6 +158,8 @@ process_time ()
 int
 main (int argc, char **argv)
 {
+    //pthread_mutex_init(&go_mutex,NULL); //part of 'run' fix
+
     if (argc != 3)
     {
         fprintf (stderr, usage, program);
@@ -178,9 +196,9 @@ main (int argc, char **argv)
         }
     }
 
-    pthread_t m_thrd;
+    pthread_t m_thread;
 
-    if (pthread_create(&m_thrd,0,monitor,NULL))
+    if (pthread_create(&m_thread,0,monitor,NULL))
         die("Exception: no monitor thread!");
 
     for (unsigned i = 0; i < num_workers; i++)
@@ -190,14 +208,16 @@ main (int argc, char **argv)
     double w = wall_clock_time ();
     double p = process_time ();
 
-    go = true; //datarace1
+    //pthread_mutex_lock(&go_mutex); //related to 'run' fix
+    go = true;
+    //pthread_mutex_unlock(&go_mutex);
 
     for (unsigned i = 0; i < num_workers; i++)
         if (pthread_join (workers[i].thread, 0))
             die ("failed to join worker thread %u", i);
 
-    if (pthread_join(m_thrd,0))
-        die("Exception: monitor thread wasn't joined");
+    if (pthread_join(m_thread,0))
+        die("Exception: monitor thread failed to join!");
 
     free (workers);
 
@@ -213,6 +233,8 @@ main (int argc, char **argv)
     msg ("used %.3f seconds wall-clock and %.3f process time", w, p);
     msg ("utilization %.0f%%, %.1f million operations per second",
          (w ? 100 * p / w : 0), w ? total_operations / 1e6 / w : 0);
+         
+    //pthread_mutex_destroy(&go_mutex); //part of 'run fix
 
     return 0;
 }

@@ -3,7 +3,8 @@
 // Copyright (C) 2020, .... [ put your name here ] ....
 /*------------------------------------------------------------------------*/
 
-#define program "incorrect"
+#define program "local_incorrect"
+#define CACHE_LINE_SIZE 64
 
 static const char *usage =
   "usage: " program " <workers> <operations>\n"
@@ -26,6 +27,8 @@ static const char *usage =
 /*------------------------------------------------------------------------*/
 
 static unsigned num_workers;
+static unsigned f_work = 0;
+
 static uint64_t total_operations;
 
 /*------------------------------------------------------------------------*/
@@ -66,23 +69,46 @@ typedef struct worker worker;
 
 struct worker
 {
-  pthread_t thread;
-  uint64_t operations;
+    pthread_t thread;
+    uint64_t operations;
+    uint64_t localsum;
+    char padding[CACHE_LINE_SIZE - sizeof(pthread_t) - 2*sizeof(uint64_t)];
 };
 
 static worker *workers;
 
+static void* monitor()
+{
+    while (f_work < num_workers) {
+        usleep(10000);
+        for (unsigned i = 0; i<num_workers; i++)
+        {
+          double percent = (double) workers[i].localsum / (double) workers[i].operations;
+          printf("--- prog[%u]: %ld%% ---",i, (uint64_t)(percent*100));
+        }      
+        printf("\r");
+        fflush(stdout);
+    }   
+}
+
 static void *
 run (void *ptr)
 {
-  worker *worker = ptr;
-  while (!go)
-    ;
-  const uint64_t operations = worker->operations;
-   uint64_t *p = &global_result;
-  for (uint64_t i = 0; i < operations; i++)
-    *p = *p + 1;
-  return 0;
+    worker *worker = ptr;
+    while (!go)
+        ;
+    const uint64_t operations = worker->operations;
+    uint64_t *p = &(worker->localsum);
+    
+    for (uint64_t i = 0; i < operations; i++)
+    {
+        worker->localsum++;
+    }	
+    
+    __sync_add_and_fetch(&global_result,worker->localsum);
+    //global_result += worker->localsum;
+    __sync_add_and_fetch(&f_work,1);
+    return 0;
 }
 
 /*========================================================================*/
@@ -153,6 +179,11 @@ main (int argc, char **argv)
 	  rest--;
 	}
     }
+    
+    pthread_t m_thread;
+    
+    if (pthread_create(&m_thread,0,monitor,NULL))
+        die("Exception: no monitor thread!");
 
   for (unsigned i = 0; i < num_workers; i++)
     if (pthread_create (&workers[i].thread, 0, run, workers + i))
@@ -166,6 +197,9 @@ main (int argc, char **argv)
   for (unsigned i = 0; i < num_workers; i++)
     if (pthread_join (workers[i].thread, 0))
       die ("failed to join worker thread %u", i);
+      
+      if (pthread_join(m_thread,0))
+        die("Exception: monitor thread failed to join!");
 
   free (workers);
 
