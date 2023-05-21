@@ -6,7 +6,7 @@ namespace globals
 
 	extern int seed{ 32456 }; //54
 
-	extern int matrixSize{ 7 };
+	extern int matrixSize{ 5 };
 
 	extern Algorithm algorithm{ Algorithm::MPI_PARALLEL };
 

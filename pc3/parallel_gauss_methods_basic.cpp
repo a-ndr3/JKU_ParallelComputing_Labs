@@ -3,7 +3,6 @@
 #include "flatmatrix.h"
 #include "support_methods.h"
 #include "benchmarking.h"
-#include "logger.cpp"
 
 void ParallelGauss::divideRow(int64_t* A, int64_t row, int64_t divisor, int64_t M)
 {
@@ -97,60 +96,15 @@ void ParallelGauss::diagonalize(flatmatrix& aMatr, flatmatrix& iMatr, int M, int
     int64_t* local_A = new int64_t[rows_per_process * M];
     int64_t* local_I = new int64_t[rows_per_process * M];
 
-    MPI_Scatter(&A, rows_per_process * M, MPI_INT64_T, local_A,
+    MPI_Scatter(A, rows_per_process * M, MPI_INT64_T, local_A,
                     rows_per_process * M, MPI_INT64_T, 0,
                     MPI_COMM_WORLD);
 
-    MPI_Scatter(&I, rows_per_process * M, MPI_INT64_T, local_I,
+    MPI_Scatter(I, rows_per_process * M, MPI_INT64_T, local_I,
                     rows_per_process * M, MPI_INT64_T, 0,
                     MPI_COMM_WORLD);
 
-    if (rank == 0)
-    {
-        std::ofstream ofs("log_rank0.txt", std::ofstream::app);
 
-        for (int64_t i = 0; i < M; i++)
-        {
-            ofs << local_A[i] << " ";
-        }
-        ofs << std::endl;
-        ofs.close();
-    }
-    if (rank == 1)
-    {
-        std::ofstream ofs("log_rank1.txt", std::ofstream::app);
-
-        for (int64_t i = 0; i < M; i++)
-        {
-            ofs << local_A[i] << " ";
-        }
-        ofs << std::endl;
-        ofs.close();
-    }
-    if (rank == 2)
-    {
-        std::ofstream ofs("log_rank2.txt", std::ofstream::app);
-
-        for (int64_t i = 0; i < M; i++)
-        {
-            ofs << local_A[i] << " ";
-        }
-        ofs << std::endl;
-        ofs.close();
-    }
-    if (rank == 3)
-    {
-        std::ofstream ofs("log_rank3.txt", std::ofstream::app);
-
-        for (int64_t i = 0; i < M; i++)
-        {
-            ofs << local_A[i] << " ";
-        }
-        ofs << std::endl;
-        ofs.close();
-    }
-
-    /*
     for (int64_t i = 0; i < N; i++)
     {
         int64_t pivot;
@@ -181,7 +135,7 @@ void ParallelGauss::diagonalize(flatmatrix& aMatr, flatmatrix& iMatr, int M, int
     // gather the permuted inverse matrix B from all processes
         MPI_Gather(local_A, rows_per_process * M, MPI_INT64_T, A, rows_per_process * M, MPI_INT64_T, 0, MPI_COMM_WORLD);
         MPI_Gather(local_I, rows_per_process * M, MPI_INT64_T, I,rows_per_process * M, MPI_INT64_T, 0, MPI_COMM_WORLD);
-*/
+
     delete[] local_A;
     delete[] local_I;
 }
@@ -194,13 +148,13 @@ flatmatrix ParallelGauss::solveParallel(flatmatrix &A, int N, int M, int size, i
 
 	I.make_flatmatrix_identityMatrix();
 
-	Logger::log("Parallel MPI method started for Matrix: " + std::to_string(N) + "x" + std::to_string(M));
+	//Logger::log("Parallel MPI method started for Matrix: " + std::to_string(N) + "x" + std::to_string(M));
 
 	bench.startTimer();
 	diagonalize(A, I, M, N, size, rank);
     double elapsed = bench.getTime();
 
-	Logger::logFull("Finished with elapsed time: ", elapsed);
+	//Logger::logFull("Finished with elapsed time: ", elapsed);
 
 	return I;
 }

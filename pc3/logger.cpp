@@ -12,7 +12,8 @@ public:
     static void log(const std::string& message)
     {
         std::ofstream ofs("log.txt", std::ofstream::app);
-        ofs << "[" << "INFO" << "] : " << message << std::endl;
+        //ofs << "[" << "INFO" << "] : " << message << std::endl;
+        ofs << message << std::endl;
         ofs.close();
     }
 
@@ -33,4 +34,5 @@ public:
         ofs.close();
     }
 };
+
 #endif // !Logger_H

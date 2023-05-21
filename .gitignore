@@ -4,3 +4,5 @@
 
 /out/build
 /.vs
+/pc3/.idea
+/pc3/cmake-build-debug

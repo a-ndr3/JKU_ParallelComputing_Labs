@@ -11,10 +11,11 @@ class ParallelGauss
 
 	 void subtractRow(int64_t* A, int64_t targetRow, int64_t sourceRow, int64_t multiplier, int64_t M);
 
-	 void diagonalize(flatmatrix& aMatr, flatmatrix& iMatr, int M, int N, int size, int rank);
+
 
 public:
     flatmatrix solveParallel(flatmatrix& A, int N, int M,int size, int rank);
+    void diagonalize(flatmatrix& aMatr, flatmatrix& iMatr, int M, int N, int size, int rank);
 
     ParallelGauss();
 
