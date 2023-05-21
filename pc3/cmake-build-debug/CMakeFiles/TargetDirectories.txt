@@ -1,0 +1,3 @@
+C:/Users/abloh/pc3/cmake-build-debug/CMakeFiles/pc3.dir
+C:/Users/abloh/pc3/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/abloh/pc3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
