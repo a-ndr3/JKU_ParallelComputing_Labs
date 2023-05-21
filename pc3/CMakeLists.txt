@@ -12,7 +12,7 @@ set(MPI_ROOT "C:/Program Files (x86)/Microsoft SDKs/MPI")
 # Include MPI headers
 include_directories(${MPI_ROOT}/Include)
 
-add_executable(pc3 main.cpp benchmarking.cpp support_methods.h globals.cpp logger.cpp matrix.cpp gauss_methods.cpp parallel_gauss_methods_basic.cpp flatmatrix.cpp flatmatrix.h)
+add_executable(pc3 main.cpp benchmarking.cpp support_methods.h globals.cpp logger.cpp matrix.cpp gauss_methods.cpp parallel_gauss_methods_basic.cpp flatmatrix.cpp flatmatrix.h gauss_methods_flat.cpp)
 
 # Link against MPI libraries
 target_link_libraries(pc3 ${MPI_ROOT}/Lib/x64/msmpi.lib)

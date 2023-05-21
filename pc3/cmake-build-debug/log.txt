@@ -102,3 +102,18 @@ ________________________________________
 [INFO] : Finished with elapsed time: 
 [TIME] : 0.0121169999911
 ________________________________________
+[INFO] : Algorithm: SEQ
+[INFO] : Gauss method started for Matrix: 5x5
+[INFO] : Finished with elapsed time: 
+[TIME] : 0.0000100999896
+________________________________________
+[INFO] : Algorithm: SEQ
+[INFO] : Gauss method started for Matrix: 5x5
+[INFO] : Finished with elapsed time: 
+[TIME] : 0.0000100000034
+________________________________________
+[INFO] : Algorithm: SEQ
+[INFO] : Gauss method started for Matrix: 7x7
+[INFO] : Finished with elapsed time: 
+[TIME] : 0.0000237000058
+________________________________________

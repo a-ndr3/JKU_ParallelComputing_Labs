@@ -16,11 +16,15 @@ class flatmatrix {
 
 public:
     flatmatrix(int64_t _rows, int64_t _columns);
+    flatmatrix(int64_t _rows_cols);
     ~flatmatrix();
     void fillflatmatrix(int _seed = globals::seed);
     void print();
     void make_flatmatrix_identityMatrix();
     int64_t * getData();
+
+    int64_t getRows() const;
+    int64_t getColumns() const;
 };
 
 

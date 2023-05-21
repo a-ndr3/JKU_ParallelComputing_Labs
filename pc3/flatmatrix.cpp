@@ -64,6 +64,24 @@ int64_t * flatmatrix::getData()
     return data;
 }
 
-flatmatrix::~flatmatrix() {
+flatmatrix::~flatmatrix()
+{
     delete[] data;
+}
+
+int64_t flatmatrix::getRows() const
+{
+    return rows;
+}
+
+int64_t flatmatrix::getColumns() const
+{
+    return columns;
+}
+
+flatmatrix::flatmatrix(int64_t _rows_cols)
+{
+    rows = _rows_cols;
+    columns = _rows_cols;
+    data = new int64_t[rows * columns];
 }

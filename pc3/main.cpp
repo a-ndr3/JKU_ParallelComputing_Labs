@@ -6,6 +6,7 @@
 #include "logger.cpp"
 #include "matrix.h"
 #include "gauss_methods.cpp"
+#include "gauss_methods_flat.cpp"
 
 void parseArgs(const std::vector<std::string>& args)
 {
@@ -67,18 +68,21 @@ int main(int argc, char *argv[]) {
     int N = globals::matrixSize;
     int M = globals::matrixSize;
 
+    globals::algorithm = globals::Algorithm::SEQ;
+
     switch (globals::algorithm)
     {
         case globals::SEQ:
         {
             Logger::log("Algorithm: SEQ");
 
-            myMatrix An(5);
-            myMatrix* resultM;
+            flatmatrix An(globals::matrixSize);
+            flatmatrix* resultM;
 
-            An.fill_matrix(globals::seed);
-            Gauss gauss;
-            resultM = new myMatrix(gauss.Solve(An));
+            An.fillflatmatrix(globals::seed);
+            GaussFlat gauss;
+            An.print(); std::cout << "_________________" << std::endl;
+            resultM = new flatmatrix(gauss.Solve(An));
             resultM->print();
             break;
         }
