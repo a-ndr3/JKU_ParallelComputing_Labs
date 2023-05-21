@@ -4,15 +4,13 @@
 #include "flatmatrix.h"
 #include "parallel_gauss_methods_basic.h"
 #include "logger.cpp"
-#include "matrix.h"
-#include "gauss_methods.cpp"
 #include "gauss_methods_flat.cpp"
 
 void parseArgs(const std::vector<std::string>& args)
 {
     for (auto i = 0; i < args.size(); i++)
     {
-        if (args[i] == "-a" && i + 1 < args.size())
+        if (args[i] == "-alg" && i + 1 < args.size())
         {
             if (args[i + 1] == "seq")
             {
@@ -67,8 +65,6 @@ int main(int argc, char *argv[]) {
 
     int N = globals::matrixSize;
     int M = globals::matrixSize;
-
-    globals::algorithm = globals::Algorithm::SEQ;
 
     switch (globals::algorithm)
     {

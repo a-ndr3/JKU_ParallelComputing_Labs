@@ -1,119 +1,25 @@
 [INFO] : Algorithm: SEQ
-[INFO] : Gauss method started for Matrix = 5
+[INFO] : Gauss method started for Matrix: 7x7
 [INFO] : Finished with elapsed time: 
-[TIME] : 0.0000101000041
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000812999933
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 500x500
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 500x500
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 500x500
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000367000030
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 500x500
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 10x10
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000890000083
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 10x10
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0001115000050
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 50x50
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 30x30
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0010769999935
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 40x40
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0042879999964
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 10x10
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0001226000022
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 10x10
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0001029999985
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 50x50
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000912999967
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel Basic Gauss method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000666999986
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000666999986
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 50x50
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 60x60
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0092787000031
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 49x49
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 48x48
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0046664999973
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 100x100
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 101x101
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0379491000058
-________________________________________
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 601x601
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 600x600
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 501x501
-[INFO] : Algorithm: MPI_PARALLEL
-[INFO] : Parallel MPI method started for Matrix: 60x60
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0121169999911
-________________________________________
-[INFO] : Algorithm: SEQ
-[INFO] : Gauss method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000100999896
-________________________________________
-[INFO] : Algorithm: SEQ
-[INFO] : Gauss method started for Matrix: 5x5
-[INFO] : Finished with elapsed time: 
-[TIME] : 0.0000100000034
+[TIME] : 0.0000196000037
 ________________________________________
 [INFO] : Algorithm: SEQ
 [INFO] : Gauss method started for Matrix: 7x7
 [INFO] : Finished with elapsed time: 
-[TIME] : 0.0000237000058
+[TIME] : 0.0000246999989
+________________________________________
+[INFO] : Algorithm: MPI_PARALLEL
+[INFO] : Parallel MPI method started for Matrix: 7x7
+[INFO] : Finished with elapsed time: 
+[TIME] : 0.0000623999949
+________________________________________
+[INFO] : Algorithm: MPI_PARALLEL
+[INFO] : Parallel MPI method started for Matrix: 7x7
+[INFO] : Finished with elapsed time: 
+[TIME] : 0.0001181999978
+________________________________________
+[INFO] : Algorithm: MPI_PARALLEL
+[INFO] : Parallel MPI method started for Matrix: 7x7
+[INFO] : Finished with elapsed time: 
+[TIME] : 0.0000913999975
 ________________________________________
