@@ -10,7 +10,7 @@ namespace globals
 
 	extern Algorithm algorithm{ Algorithm::MPI_PARALLEL };
 
-    extern int mpi_rank{ 1 };
+    extern int mpi_rank{ 0 };
 
-    extern int mpi_size{ 2 };
+    extern int mpi_size{ 0 };
 }
