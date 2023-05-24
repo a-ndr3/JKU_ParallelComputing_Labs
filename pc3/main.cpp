@@ -5,19 +5,12 @@
 #include "flatmatrix.h"
 #include "logger.cpp"
 #include "gauss_methods_flat.cpp"
+#include "benchmarking.h"
 
 
 void divideRow(int64_t* A, int64_t row, int64_t divisor, int M);
 
 void subtractRow(int64_t *A, int64_t targetRow, int64_t* sourceRow, int64_t multiplier, int M);
-
-static void writeInFile(const std::string& filename, const std::string& content)
-{
-    std::ofstream file;
-    file.open(filename, std::ios::app);
-    file << content << std::endl;
-    file.close();
-}
 
 void swapRows(int64_t *A, int64_t row1, int64_t row2, int M);
 
@@ -27,24 +20,12 @@ void parseArgs(const std::vector<std::string>& args)
     {
         if (args[i] == "-alg" && i + 1 < args.size())
         {
-            if (args[i + 1] == "seq")
-            {
-                globals::algorithm = globals::Algorithm::SEQ;
-            }
-            else if (args[i + 1] == "par")
+            if (args[i + 1] == "par")
             {
                 globals::algorithm = globals::Algorithm::MPI_PARALLEL;
             }
         }
-        if (args[i] == "-mpi_rank" && i + 1 < args.size())
-        {
-            globals::mpi_rank = std::stoi(args[i + 1]);
-        }
-        if (args[i] == "-mpi_size" && i + 1 < args.size())
-        {
-            globals::mpi_size = std::stoi(args[i + 1]);
-        }
-        if (args[i] == "-n" && i + 1 < args.size())
+        if (args[i] == "-ms" && i + 1 < args.size())
         {
             globals::matrixSize = std::stoi(args[i + 1]);
         }
@@ -58,6 +39,7 @@ void parseArgs(const std::vector<std::string>& args)
         }
     }
 }
+
 
 int main(int argc, char *argv[]) {
 
@@ -94,24 +76,25 @@ int main(int argc, char *argv[]) {
         iMatrix_global = new flatmatrix(globals::matrixSize, globals::matrixSize);
         aMatrix_global->fillflatmatrix(globals::seed);
         iMatrix_global->make_flatmatrix_identityMatrix();
+
+        //std::cout<<"Initial matrix:"<<std::endl;
+        //aMatrix_global->print();
     }
 
     int N = globals::matrixSize;
     int M = globals::matrixSize;
 
-    int rows_per_process_local = globals::matrixSize / size_global; // подумать
+    int rows_per_process_local = globals::matrixSize / size_global;
 
     auto* aMatrix_local = new int64_t[rows_per_process_local * N];
     auto* iMatrix_local = new int64_t[rows_per_process_local * N];
 
-  //if (rank_global == 0)
-  // {
-   //     aMatrix_global->print();
-   //     std::cout<<"___________"<<std::endl;
-  // }
-
    int64_t* pivotRow = new int64_t[N];
    int64_t* inversed_pivotRow = new int64_t[N];
+
+    myBenchmarks bench;
+
+    bench.startTimer();
 
     for (int64_t i = 0; i < N; i++)
     {
@@ -171,13 +154,19 @@ int main(int argc, char *argv[]) {
 
         MPI_Gather(aMatrix_local, rows_per_process_local * N, MPI_INT64_T, aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
         MPI_Gather(iMatrix_local, rows_per_process_local * N, MPI_INT64_T, iMatrix_global->getData(),rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
-
     }
 
-  //if (rank_global == 0)
- // {
- //     iMatrix_global->print();
- // }
+   auto timerResult = bench.getTime();
+
+  if (rank_global == 0)
+  {
+      std::cout<<"Time: "<<timerResult<<std::endl;
+
+      writeInFile("log.txt",  "[PARALLEL] Matrix_size: " + std::to_string(globals::matrixSize) + "\n" + std::to_string(timerResult));
+
+      //std::cout<<"Result matrix:"<<std::endl;
+      //iMatrix_global->print();
+  }
 
     MPI_Finalize();
 
@@ -215,41 +204,3 @@ void swapRows(int64_t *A, int64_t row1, int64_t row2, int N) {
     }
 }
 
-/*switch (globals::algorithm)
-{
-    case globals::SEQ:
-    {
-        Logger::log("Algorithm: SEQ");
-
-        flatmatrix An(globals::matrixSize);
-        flatmatrix* resultM;
-
-        An.fillflatmatrix(globals::seed);
-        GaussFlat gauss;
-        An.print(); std::cout << "_________________" << std::endl;
-        resultM = new flatmatrix(gauss.Solve(An));
-        resultM->print();
-        break;
-    }
-    case globals::MPI_PARALLEL:
-    {
-        Logger::log("Algorithm: MPI_PARALLEL");
-
-        ParallelGauss pg = *new ParallelGauss();
-
-        flatmatrix A(N,M);
-        flatmatrix* result;
-
-        A.fillflatmatrix(globals::seed);
-        //A.print(); std::cout << "_________________" << std::endl;
-
-        globals::mpi_rank = rank;
-        globals::mpi_size = size;
-
-        result = new flatmatrix(pg.solveParallel(A, N, M, size, rank));
-
-        //result->print();
-        MPI_Finalize();
-        break;
-    }
-}*/

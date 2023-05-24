@@ -4,8 +4,17 @@
 #include "support_methods.h"
 #include "flatmatrix.h"
 #include <iostream>
-#include "benchmarking.h"
-#include "logger.cpp"
+#include <chrono>
+#include <fstream>
+#include <iomanip>
+
+static void writeInFile(const std::string& filename, const std::string& content)
+{
+    std::ofstream file;
+    file.open(filename, std::ios::app);
+    file << content << std::endl;
+    file.close();
+}
 
 class GaussFlat
 {
@@ -72,8 +81,6 @@ public:
 
     virtual flatmatrix Solve(flatmatrix& A)
     {
-        myBenchmarks bench;
-
         int64_t n = A.getRows();
         int64_t m = A.getColumns();
 
@@ -81,13 +88,16 @@ public:
 
         I.make_flatmatrix_identityMatrix();
 
-        Logger::log("Gauss method started for Matrix: " + std::to_string(n) + "x" + std::to_string(m));
+        auto start = std::chrono::high_resolution_clock::now();
 
-        bench.startTimer();
         diagonalize(A, I);
-        double elapsed = bench.getTime();
 
-        Logger::logFull("Finished with elapsed time: ", elapsed);
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> diff = end - start;
+
+        std::cout << std::fixed << std::setprecision(9) << std::left;
+        writeInFile("log.txt",  "[SEQ] Matrix_size: " + std::to_string(globals::matrixSize) + "\n"  + std::to_string(diff.count()));
 
         return I;
     }
