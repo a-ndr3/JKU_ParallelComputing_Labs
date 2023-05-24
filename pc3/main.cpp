@@ -1,15 +1,15 @@
 #include <iostream>
 #include <mpi.h>
 #include <vector>
+#include <cstdint>
 #include "flatmatrix.h"
-#include "parallel_gauss_methods_basic.h"
 #include "logger.cpp"
 #include "gauss_methods_flat.cpp"
-#include "logger2.cpp"
 
-void divideRow(flatmatrix& A, int64_t row, int64_t divisor, int M);
 
-void subtractRow(int64_t *A, int targetRow, int64_t sourceRow, int64_t multiplier, int M);
+void divideRow(int64_t* A, int64_t row, int64_t divisor, int M);
+
+void subtractRow(int64_t *A, int64_t targetRow, int64_t* sourceRow, int64_t multiplier, int M);
 
 static void writeInFile(const std::string& filename, const std::string& content)
 {
@@ -18,6 +18,8 @@ static void writeInFile(const std::string& filename, const std::string& content)
     file << content << std::endl;
     file.close();
 }
+
+void swapRows(int64_t *A, int64_t row1, int64_t row2, int M);
 
 void parseArgs(const std::vector<std::string>& args)
 {
@@ -61,11 +63,11 @@ int main(int argc, char *argv[]) {
 
     MPI_Init(&argc, &argv);
 
-    int rank; int size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int rank_global; int size_global;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank_global);
+    MPI_Comm_size(MPI_COMM_WORLD, &size_global);
 
-    if (rank == 0 && argc > 1)
+    if (rank_global == 0 && argc > 1)
     {
         std::vector<std::string> argsVector(argv, argv + argc);
         parseArgs(argsVector);
@@ -76,9 +78,6 @@ int main(int argc, char *argv[]) {
         {
             str.append(x);
         }
-
-        writeInFile("log.txt",str);
-        //Logger::log(str);
     }
 
     MPI_Bcast(&globals::algorithm, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -86,166 +85,135 @@ int main(int argc, char *argv[]) {
     MPI_Bcast(&globals::primeNumber, 1, MPI_INT64_T, 0, MPI_COMM_WORLD);
     MPI_Bcast(&globals::seed, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    flatmatrix A(globals::matrixSize, globals::matrixSize);
-    flatmatrix I(globals::matrixSize, globals::matrixSize);
+    flatmatrix* aMatrix_global;
+    flatmatrix* iMatrix_global;
 
-    auto pg = *new ParallelGauss();
-
-    if (rank == 0)
+    if (rank_global == 0)
     {
-        A.fillflatmatrix(globals::seed);
-        I.make_flatmatrix_identityMatrix();
+        aMatrix_global = new flatmatrix(globals::matrixSize, globals::matrixSize);
+        iMatrix_global = new flatmatrix(globals::matrixSize, globals::matrixSize);
+        aMatrix_global->fillflatmatrix(globals::seed);
+        iMatrix_global->make_flatmatrix_identityMatrix();
     }
 
     int N = globals::matrixSize;
     int M = globals::matrixSize;
 
-    int rows_per_process = globals::matrixSize / size;
+    int rows_per_process_local = globals::matrixSize / size_global; // подумать
 
-    int64_t* local_A = new int64_t[rows_per_process * N];
-    int64_t* local_I = new int64_t[rows_per_process * N];
+    auto* aMatrix_local = new int64_t[rows_per_process_local * N];
+    auto* iMatrix_local = new int64_t[rows_per_process_local * N];
 
-    if (rank == 0)
-    {
-        MPI_Scatter(A.getData(), rows_per_process * N, MPI_INT64_T, local_A,
-                    rows_per_process * N, MPI_INT64_T, 0,
-                    MPI_COMM_WORLD);
+  //if (rank_global == 0)
+  // {
+   //     aMatrix_global->print();
+   //     std::cout<<"___________"<<std::endl;
+  // }
 
-        MPI_Scatter(I.getData(), rows_per_process * N, MPI_INT64_T, local_I,
-                    rows_per_process * N, MPI_INT64_T, 0,
-                    MPI_COMM_WORLD);
-    }
-
-    if (rank == 0)
-    {
-        A.print();
-        std::cout<<"___________"<<std::endl;
-    }
+   int64_t* pivotRow = new int64_t[N];
+   int64_t* inversed_pivotRow = new int64_t[N];
 
     for (int64_t i = 0; i < N; i++)
     {
-        if (rank == 0)
+        if (rank_global == 0)
         {
-            int64_t pivot;
-            if (i % size == rank) {
-                pivot = A.getData()[(i / size) * M + i]; // diagonal element
-                if (pivot == 0) {
-                    MPI_Abort(MPI_COMM_WORLD, -1); // abort if pivot is zero
+            int64_t maxRowIndex = i;
+
+            for (int64_t k = i + 1; k < N; k++)
+            {
+                if (aMatrix_global->getData()[k * N + i] > aMatrix_global->getData()[maxRowIndex * N + i])
+                {
+                    maxRowIndex = k;
                 }
-                divideRow(A, i / size, pivot, M); // divide pivot row by pivot el to get 1
-                divideRow(I, i / size, pivot, M); // divide following row of identity matrix by pivot el
+            }
+            if (maxRowIndex != i) {
+                swapRows(aMatrix_global->getData(), i, maxRowIndex, N);
+                swapRows(iMatrix_global->getData(), i, maxRowIndex, N);
+            }
+
+            int64_t pivot = aMatrix_global->getData()[i * N + i];
+
+            divideRow(aMatrix_global->getData(), i, pivot, N);
+            divideRow(iMatrix_global->getData(), i, pivot, N);
+
+            for (int64_t j = 0; j < N; j++)
+            {
+                pivotRow[j] = aMatrix_global->getData()[i * N + j];
+                inversed_pivotRow[j] = iMatrix_global->getData()[i * N + j];
             }
         }
 
-        // broadcast pivot row to all processes
-        //cast ili ne cast?
-        if (rank == 0)
-        {
-            MPI_Scatter(A.getData(), rows_per_process * N, MPI_INT64_T, local_A,
-                    rows_per_process * N, MPI_INT64_T, 0,
+        MPI_Scatter(aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, aMatrix_local,
+                    rows_per_process_local * N, MPI_INT64_T, 0,
                     MPI_COMM_WORLD);
 
-            MPI_Scatter(I.getData(), rows_per_process * N, MPI_INT64_T, local_I,
-                    rows_per_process * N, MPI_INT64_T, 0,
+        MPI_Scatter(iMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, iMatrix_local,
+                    rows_per_process_local * N, MPI_INT64_T, 0,
                     MPI_COMM_WORLD);
-        }
 
-       // MPI_Bcast(&pivot, 1, MPI_INT64_T, i % size, MPI_COMM_WORLD);
-       // if (i % size != rank) {
-        //    MPI_Bcast(A.getData()  + (i / size) * M, M, MPI_INT64_T, i % size, MPI_COMM_WORLD);
-       //     MPI_Bcast(I.getData()   + (i / size) * M, M, MPI_INT64_T, i % size, MPI_COMM_WORLD);
-       // }
+        MPI_Bcast(pivotRow, N, MPI_INT64_T, 0, MPI_COMM_WORLD);
+        MPI_Bcast(inversed_pivotRow, N, MPI_INT64_T, 0, MPI_COMM_WORLD);
 
-        for (int j = 0; j < rows_per_process; j++)
+        for (int64_t j = 0; j < rows_per_process_local; j++)
         {
-            if (rank * rows_per_process + j != i) // exclude pivot row
-            {                        //local_A ?
-                int64_t multiplier = A.getData()[j * M + i]; // get multiplier to eliminate element below pivot
-
-                subtractRow(local_A, j, i / size, multiplier, M); // subtract multiplied pivot row from current to make el below pivot = 0
-                subtractRow(local_I, j, i / size, multiplier, M); // subtract multiplied pivot row from following in identity
+            if (j + rank_global * rows_per_process_local == i)
+            {
+                continue;
             }
+
+            int64_t multiplier = aMatrix_local[j*N+i];
+
+            subtractRow(aMatrix_local, j, pivotRow, multiplier,N);
+            subtractRow(iMatrix_local, j, inversed_pivotRow, multiplier,N);
         }
-        MPI_Gather(local_A, rows_per_process * M, MPI_INT64_T, A.getData(), rows_per_process * M, MPI_INT64_T, 0, MPI_COMM_WORLD);
-        MPI_Gather(local_I, rows_per_process * M, MPI_INT64_T, I.getData(),rows_per_process * M, MPI_INT64_T, 0, MPI_COMM_WORLD);
+
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        MPI_Gather(aMatrix_local, rows_per_process_local * N, MPI_INT64_T, aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
+        MPI_Gather(iMatrix_local, rows_per_process_local * N, MPI_INT64_T, iMatrix_global->getData(),rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
+
     }
 
-    //MPI_Gather(local_A, rows_per_process * M, MPI_INT64_T, A.getData(), rows_per_process * M, MPI_INT64_T, 0, MPI_COMM_WORLD);
-   // MPI_Gather(local_I, rows_per_process * M, MPI_INT64_T, I.getData(),rows_per_process * M, MPI_INT64_T, 0, MPI_COMM_WORLD);
-
-    delete[] local_A;
-    delete[] local_I;
+  //if (rank_global == 0)
+ // {
+ //     iMatrix_global->print();
+ // }
 
     MPI_Finalize();
-
-    I.print();
 
     return 0;
 }
 
-void divideRow(flatmatrix& A, int64_t row, int64_t divisor, int M) {
+void divideRow(int64_t* A, int64_t row, int64_t divisor, int M) {
     for (int64_t i = 0; i < M; i++)
     {
-        A.getData()[row * M + i] = mDiv(A.getData()[row * M + i], divisor);
+        A[row * M + i] = mDiv(A[row * M + i], divisor);
     }
 }
 
-void subtractRow(int64_t *A, int targetRow, int64_t sourceRow, int64_t multiplier, int M) {
+void subtractRow(int64_t *A, int64_t targetRow, int64_t* sourceRow, int64_t multiplier, int M) {
+    int64_t mMulResult, mSubResult;
+    int64_t sourceRowItii;
+    int64_t targetRowIi;
     for (int64_t i = 0; i < M; i++)
     {
-        A[targetRow * M + i] = mSub(A[targetRow * M + i], mMul(multiplier, A[sourceRow * M + i]));
+        sourceRowItii = sourceRow[i];
+        mMulResult = mMul(multiplier, sourceRowItii);
+        targetRowIi = A[targetRow * M + i];
+        mSubResult = mSub(targetRowIi, mMulResult);
+
+        A[targetRow * M + i] = mSub(A[targetRow * M + i], mMul(multiplier, sourceRow[i]));
     }
 }
 
-
-/*
-    int* matrix = new int[16];
-    int* res = new int[4];
-    for (int i = 0; i < 16; i++)
+void swapRows(int64_t *A, int64_t row1, int64_t row2, int N) {
+    for (int64_t i = 0; i < N; i++)
     {
-        matrix[i] = i*(rank+1);
+        int64_t temp = A[row1 * N + i];
+        A[row1 * N + i] = A[row2 * N + i];
+        A[row2 * N + i] = temp;
     }
-
-    MPI_Scatter(matrix, 4, MPI_INT, res, 4, MPI_INT, 0, MPI_COMM_WORLD);
-
-    if (rank == 0)
-    {
-        std::ofstream ofs("log_rank0.txt", std::ofstream::app);
-        for (int64_t i = 0; i < 4; i++)
-        {
-            ofs << res[i] << " ";
-        }
-        ofs.close();
-    }
-    if (rank == 1)
-    {
-        std::ofstream ofs("log_rank1.txt", std::ofstream::app);
-        for (int64_t i = 0; i < 4; i++)
-        {
-            ofs << res[i] << " ";
-        }
-        ofs.close();
-    }
-    if (rank == 2)
-    {
-        std::ofstream ofs("log_rank2.txt", std::ofstream::app);
-        for (int64_t i = 0; i < 4; i++)
-        {
-            ofs << res[i] << " ";
-        }
-        ofs.close();
-    }
-    if (rank == 3)
-    {
-        std::ofstream ofs("log_rank3.txt", std::ofstream::app);
-        for (int64_t i = 0; i < 4; i++)
-        {
-            ofs << res[i] << " ";
-        }
-        ofs.close();
-    }
-*/
-
+}
 
 /*switch (globals::algorithm)
 {
