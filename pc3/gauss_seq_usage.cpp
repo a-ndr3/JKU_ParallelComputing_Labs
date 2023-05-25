@@ -3,7 +3,7 @@
 #include "gauss_methods_flat.cpp"
 #include <vector>
 
-
+/*
 void parseArgs(const std::vector<std::string>& args)
 {
     for (auto i = 0; i < args.size(); i++)
@@ -56,3 +56,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+*/

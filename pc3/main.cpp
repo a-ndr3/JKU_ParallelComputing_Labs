@@ -76,9 +76,6 @@ int main(int argc, char *argv[]) {
         iMatrix_global = new flatmatrix(globals::matrixSize, globals::matrixSize);
         aMatrix_global->fillflatmatrix(globals::seed);
         iMatrix_global->make_flatmatrix_identityMatrix();
-
-        //std::cout<<"Initial matrix:"<<std::endl;
-        //aMatrix_global->print();
     }
 
     int N = globals::matrixSize;
@@ -96,46 +93,34 @@ int main(int argc, char *argv[]) {
 
     bench.startTimer();
 
+    MPI_Scatter(aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, aMatrix_local,
+                rows_per_process_local * N, MPI_INT64_T, 0,
+                MPI_COMM_WORLD);
+
+    MPI_Scatter(iMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, iMatrix_local,
+                rows_per_process_local * N, MPI_INT64_T, 0,
+                MPI_COMM_WORLD);
+
     for (int64_t i = 0; i < N; i++)
     {
-        if (rank_global == 0)
+        if (i / rows_per_process_local == rank_global)
         {
-            int64_t maxRowIndex = i;
+            int64_t row = i % rows_per_process_local;
+            int64_t pivot = aMatrix_local[row * N + i];
 
-            for (int64_t k = i + 1; k < N; k++)
-            {
-                if (aMatrix_global->getData()[k * N + i] > aMatrix_global->getData()[maxRowIndex * N + i])
-                {
-                    maxRowIndex = k;
-                }
-            }
-            if (maxRowIndex != i) {
-                swapRows(aMatrix_global->getData(), i, maxRowIndex, N);
-                swapRows(iMatrix_global->getData(), i, maxRowIndex, N);
-            }
-
-            int64_t pivot = aMatrix_global->getData()[i * N + i];
-
-            divideRow(aMatrix_global->getData(), i, pivot, N);
-            divideRow(iMatrix_global->getData(), i, pivot, N);
+            divideRow(aMatrix_local, row, pivot, N);
+            divideRow(iMatrix_local, row, pivot, N);
 
             for (int64_t j = 0; j < N; j++)
             {
-                pivotRow[j] = aMatrix_global->getData()[i * N + j];
-                inversed_pivotRow[j] = iMatrix_global->getData()[i * N + j];
+                pivotRow[j] = aMatrix_local[row * N + j];
+                inversed_pivotRow[j] = iMatrix_local[row * N + j];
             }
         }
 
-        MPI_Scatter(aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, aMatrix_local,
-                    rows_per_process_local * N, MPI_INT64_T, 0,
-                    MPI_COMM_WORLD);
+        MPI_Bcast(pivotRow, N, MPI_INT64_T, i / rows_per_process_local, MPI_COMM_WORLD);
+        MPI_Bcast(inversed_pivotRow, N, MPI_INT64_T, i / rows_per_process_local, MPI_COMM_WORLD);
 
-        MPI_Scatter(iMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, iMatrix_local,
-                    rows_per_process_local * N, MPI_INT64_T, 0,
-                    MPI_COMM_WORLD);
-
-        MPI_Bcast(pivotRow, N, MPI_INT64_T, 0, MPI_COMM_WORLD);
-        MPI_Bcast(inversed_pivotRow, N, MPI_INT64_T, 0, MPI_COMM_WORLD);
 
         for (int64_t j = 0; j < rows_per_process_local; j++)
         {
@@ -144,17 +129,16 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            int64_t multiplier = aMatrix_local[j*N+i];
+            int64_t multiplier = aMatrix_local[j * N + i];
 
-            subtractRow(aMatrix_local, j, pivotRow, multiplier,N);
-            subtractRow(iMatrix_local, j, inversed_pivotRow, multiplier,N);
+            subtractRow(aMatrix_local, j, pivotRow, multiplier, N);
+            subtractRow(iMatrix_local, j, inversed_pivotRow, multiplier, N);
         }
-
         MPI_Barrier(MPI_COMM_WORLD);
 
-        MPI_Gather(aMatrix_local, rows_per_process_local * N, MPI_INT64_T, aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
-        MPI_Gather(iMatrix_local, rows_per_process_local * N, MPI_INT64_T, iMatrix_global->getData(),rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
     }
+    MPI_Gather(aMatrix_local, rows_per_process_local * N, MPI_INT64_T, aMatrix_global->getData(), rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
+    MPI_Gather(iMatrix_local, rows_per_process_local * N, MPI_INT64_T, iMatrix_global->getData(),rows_per_process_local * N, MPI_INT64_T, 0, MPI_COMM_WORLD);
 
    auto timerResult = bench.getTime();
 
@@ -163,9 +147,6 @@ int main(int argc, char *argv[]) {
       std::cout<<"Time: "<<timerResult<<std::endl;
 
       writeInFile("log.txt",  "[PARALLEL] Matrix_size: " + std::to_string(globals::matrixSize) + "\n" + std::to_string(timerResult));
-
-      //std::cout<<"Result matrix:"<<std::endl;
-      //iMatrix_global->print();
   }
 
     MPI_Finalize();
@@ -181,16 +162,8 @@ void divideRow(int64_t* A, int64_t row, int64_t divisor, int M) {
 }
 
 void subtractRow(int64_t *A, int64_t targetRow, int64_t* sourceRow, int64_t multiplier, int M) {
-    int64_t mMulResult, mSubResult;
-    int64_t sourceRowItii;
-    int64_t targetRowIi;
     for (int64_t i = 0; i < M; i++)
     {
-        sourceRowItii = sourceRow[i];
-        mMulResult = mMul(multiplier, sourceRowItii);
-        targetRowIi = A[targetRow * M + i];
-        mSubResult = mSub(targetRowIi, mMulResult);
-
         A[targetRow * M + i] = mSub(A[targetRow * M + i], mMul(multiplier, sourceRow[i]));
     }
 }
