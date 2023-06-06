@@ -10,3 +10,5 @@
 ### Assignment 3
 #### Partially №1: C/C++/MPI
 
+### Assignment 4
+#### c++17: image processing using tbb/Parallel, comparison and implementation of different prime numbers counters
