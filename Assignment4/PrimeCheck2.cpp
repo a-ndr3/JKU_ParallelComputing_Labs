@@ -12,11 +12,10 @@
 
 int segmented_sieve(int low, int high)
 {
-
 	int limit = floor(sqrt(high)) + 1;
 
-	std::vector<bool> prime(limit + 1, true);
-	std::vector<bool> segment(high - low + 1, true);
+	std::vector<char> prime(limit + 1, true);
+	std::vector<char> segment(high - low + 1, true);
 
 	int local_sum = 0;
 
@@ -52,7 +51,7 @@ struct Segment {
 
 int main()
 {
-	int n = 2000000000;
+	int n = 200000000;
 	auto str = std::to_string(n);
 	for (int i = str.length() - 3; i > 0; i -= 3) {
 		str.insert(i, "_");
@@ -99,9 +98,6 @@ int main()
 #pragma endregion
 
 #pragma region sequential
-	std::vector<int> numbers(std::sqrt(n));
-	std::iota(numbers.begin(), numbers.end(), 1);
-
 	std::vector<bool> prime(n + 1, true);
 	prime[0] = prime[1] = false;
 
